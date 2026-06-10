@@ -5,14 +5,15 @@
     "level": 1,
     "xp": 88,
     "max_hp": 100,
-    "current_hp": 52,
+    "current_hp": 46,
     "base_attack": 10,
     "base_defense": 5,
     "gold": 26,
     "strategy": "Balanceado",
     "equipment": {
       "weapon": null,
-      "armor": null
+      "armor": null,
+      "accessory": null
     },
     "inventory": [],
     "statistics": {

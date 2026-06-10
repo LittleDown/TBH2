@@ -48,6 +48,8 @@ class HeroTests(unittest.TestCase):
         self.assertIs(equipped, sword)
         self.assertTrue(hero.is_equipped(sword))
         self.assertEqual(hero.attack, 17)
+        self.assertIn("accessory", hero.equipment)
+        self.assertIsNone(hero.equipment["accessory"])
 
 
 class CampaignTests(unittest.TestCase):
@@ -143,6 +145,8 @@ class SaveTests(unittest.TestCase):
         self.assertEqual(loaded_again.version, 2)
         self.assertEqual(loaded_again.hero.level, 2)
         self.assertEqual(loaded_again.hero.gold, 42)
+        self.assertIn("accessory", loaded_again.hero.equipment)
+        self.assertIsNone(loaded_again.hero.equipment["accessory"])
         self.assertEqual(loaded_again.campaign.victories, 3)
 
 

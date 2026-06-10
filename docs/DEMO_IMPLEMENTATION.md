@@ -24,11 +24,14 @@ herói, inimigos, combate, itens, save e uma interface CustomTkinter.
 - inventário persistente e equipamento manual ou automático;
 - loot escalável com raridades Comum, Raro e Épico;
 - interface lateral de 360x600 com áreas Hero, Inventory e Map;
+- sprites temporários em pixel art para herói, inimigos, chefe e loot;
+- painel de equipamentos com Arma, Armadura e Acessório;
+- inventário fixo em grade 5x4 com vinte espaços visuais;
 - testes automatizados para combate, campanha, estratégias e persistência.
 
 ## Limitações conhecidas
 
-- a identidade visual usa blocos e tipografia como placeholders de pixel art;
+- os sprites em pixel art ainda são placeholders e não arte definitiva;
 - não existem sprites animados, áudio ou efeitos avançados;
 - o conteúdo está definido em módulos Python, ainda não em arquivos declarativos;
 - não há progressão offline;

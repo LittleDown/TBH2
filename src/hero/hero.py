@@ -22,7 +22,11 @@ class Hero:
     base_attack: int = 10
     base_defense: int = 5
     equipment: dict[str, Item | None] = field(
-        default_factory=lambda: {"weapon": None, "armor": None}
+        default_factory=lambda: {
+            "weapon": None,
+            "armor": None,
+            "accessory": None,
+        }
     )
     inventory: list[Item] = field(default_factory=list)
     gold: int = 0
@@ -142,7 +146,11 @@ class Hero:
             for item_data in data.get("inventory", [])
             if isinstance(item_data, dict)
         ]
-        equipment: dict[str, Item | None] = {"weapon": None, "armor": None}
+        equipment: dict[str, Item | None] = {
+            "weapon": None,
+            "armor": None,
+            "accessory": None,
+        }
         for slot in equipment:
             item_data = equipment_data.get(slot)
             if not item_data:

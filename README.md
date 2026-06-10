@@ -17,7 +17,9 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - três estratégias selecionáveis: Agressivo, Balanceado e Defensivo;
 - experiência, level up, ouro, mortes e renascimento;
 - loot Comum, Raro e Épico com Poder escalável;
-- inventário visual, autoequipamento e equipamento manual por clique;
+- sprites temporários em pixel art para herói, inimigos, chefe e loot;
+- inventário visual 5x4, autoequipamento e equipamento manual por clique;
+- painel de equipamentos com Arma, Armadura e Acessório;
 - dez mapas do Ato I, com dez vitórias por mapa;
 - chefe Capitão Ossonegro e conclusão do Ato I;
 - abas Hero, Inventory e Map;
@@ -78,7 +80,7 @@ correta para esta implementação é o projeto Python deste repositório.
 
 ## Limitações da demo
 
-- arte e animações usam componentes visuais temporários;
+- os sprites atuais são placeholders temporários para validação visual;
 - não há áudio, loja, habilidades, classes, talentos ou progresso offline;
 - após concluir o Ato I, o combate continua em modo livre no último mapa;
 - o balanceamento é inicial e serve apenas para validar o loop.
