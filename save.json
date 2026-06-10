@@ -1,0 +1,17 @@
+{
+  "name": "Aventureiro",
+  "level": 1,
+  "xp": 0,
+  "max_hp": 100,
+  "current_hp": 100,
+  "base_attack": 10,
+  "base_defense": 5,
+  "equipment": {
+    "weapon": null,
+    "armor": null
+  },
+  "statistics": {
+    "enemies_defeated": 0,
+    "deaths": 0
+  }
+}
