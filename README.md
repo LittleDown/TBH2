@@ -18,8 +18,10 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - experiência, level up, ouro, mortes e renascimento;
 - loot Comum, Raro e Épico com Poder escalável;
 - sprites temporários em pixel art para herói, inimigos, chefe e loot;
-- jornada visual contínua entre encontros;
+- jornada visual contínua com loop baseado em delta time;
 - fluxo Exploração → Encontro → Combate → Recompensa;
+- animações de caminhada, ataque, impacto, dano flutuante, vitória e morte;
+- entrada do inimigo pela direita e cenário com movimento contínuo;
 - ambientes simples específicos para cada mapa do Ato I;
 - inventário visual 5x4, autoequipamento e equipamento manual por clique;
 - painel de equipamentos com Arma, Armadura e Acessório;
@@ -71,7 +73,8 @@ a cada dez segundos e ao fechar a janela.
 
 Durante a jornada, o herói caminha automaticamente pela região. Os encontros
 interrompem a exploração, iniciam o combate e, após a recompensa, devolvem o
-aventureiro à estrada.
+aventureiro à estrada. O loop visual usa `after()` e `time.perf_counter()`, sem
+adicionar uma engine externa ao projeto.
 
 ## Testes
 
@@ -87,7 +90,7 @@ correta para esta implementação é o projeto Python deste repositório.
 
 ## Limitações da demo
 
-- os sprites atuais são placeholders temporários para validação visual;
+- os sprites animados do herói ainda são temporários e vieram da referência JS;
 - não há áudio, loja, habilidades, classes, talentos ou progresso offline;
 - após concluir o Ato I, o combate continua em modo livre no último mapa;
 - o balanceamento é inicial e serve apenas para validar o loop.

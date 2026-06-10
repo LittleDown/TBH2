@@ -25,6 +25,7 @@ class CombatEvent:
     kind: EventKind
     message: str
     item: Item | None = None
+    amount: int | None = None
 
 
 class CombatEngine:
@@ -57,6 +58,7 @@ class CombatEngine:
             CombatEvent(
                 "hero_attack",
                 f"{self.hero.name} causa {damage} de dano em {self.enemy.name}.",
+                amount=damage,
             )
         ]
         if self.enemy.current_hp == 0:
@@ -69,6 +71,7 @@ class CombatEngine:
             CombatEvent(
                 "enemy_attack",
                 f"{self.enemy.name} causa {damage} de dano em {self.hero.name}.",
+                amount=damage,
             )
         ]
         if self.hero.current_hp == 0:

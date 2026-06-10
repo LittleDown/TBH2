@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from pathlib import Path
-from random import Random
+from time import perf_counter
 import tkinter as tk
 
 import customtkinter as ctk
@@ -12,13 +12,12 @@ from combat.combat import CombatEngine
 from game_state import GameState
 from maps.campaign import ACT_NAME, MAP_NAMES
 from save.save_manager import SaveManager
+from ui.journey_scene import JourneySceneController
 
 
 class MainWindow(ctk.CTk):
     COMBAT_INTERVAL_MS = 800
-    JOURNEY_FRAME_MS = 80
-    ENCOUNTER_PAUSE_MS = 550
-    REWARD_PAUSE_MS = 1_800
+    ANIMATION_FRAME_MS = 33
     SAVE_INTERVAL_MS = 10_000
     INVENTORY_CAPACITY = 20
     COLORS = {
@@ -69,13 +68,16 @@ class MainWindow(ctk.CTk):
         self.map_rows: list[ctk.CTkLabel] = []
         self.inventory_signature: tuple[tuple[str, bool], ...] | None = None
         self.inventory_detail_text = "Selecione um item para equipar."
-        self.visual_rng = Random()
-        self.journey_phase = "exploration"
-        self.journey_ticks_remaining = 0
-        self.hero_scene_x = 42
-        self.hero_walk_frame = 0
+        self.journey = JourneySceneController()
+        self.last_frame_time = perf_counter()
         self.scene_map_index = -1
-        self.scene_reward_text = ""
+        self.display_enemy_name = ""
+        self.display_enemy_level = 1
+        self.display_enemy_is_boss = False
+        self.display_enemy_key = "goblin"
+        self.display_enemy_hp = 1
+        self.display_enemy_max_hp = 1
+        self._capture_display_enemy()
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
@@ -88,8 +90,12 @@ class MainWindow(ctk.CTk):
 
         self._build_ui()
         self._show_panel("Hero")
-        self._start_exploration(initial=True)
-        self.after(self.JOURNEY_FRAME_MS, self._journey_tick)
+        self._append_log(
+            f"{self.hero.name} iniciou sua jornada por "
+            f"{self.game_state.campaign.current_map}."
+        )
+        self._refresh()
+        self.after(self.ANIMATION_FRAME_MS, self._animation_loop)
         self.after(self.SAVE_INTERVAL_MS, self._autosave)
 
     def _position_as_companion(self) -> None:
@@ -102,8 +108,10 @@ class MainWindow(ctk.CTk):
 
     def _load_sprites(self) -> dict[str, ctk.CTkImage]:
         asset_dir = Path(__file__).resolve().parents[1] / "assets" / "sprites"
+        warrior_dir = Path(__file__).resolve().parents[1] / "assets" / "warrior"
         sprites: dict[str, ctk.CTkImage] = {}
         self.scene_sprites: dict[str, ImageTk.PhotoImage] = {}
+        self.scene_hero_frames: dict[str, ImageTk.PhotoImage] = {}
         sizes = {
             "hero": (82, 82),
             "goblin": (82, 82),
@@ -126,6 +134,29 @@ class MainWindow(ctk.CTk):
             scene_size = (78, 78) if name != "boss" else (84, 84)
             scene_image = image.resize(scene_size, Image.Resampling.NEAREST)
             self.scene_sprites[name] = ImageTk.PhotoImage(scene_image)
+
+        for frame_name in (
+            "idle",
+            "walk1",
+            "walk2",
+            "attack1",
+            "attack2",
+            "hit",
+            "victory",
+            "dead",
+        ):
+            path = warrior_dir / f"{frame_name}.png"
+            if not path.exists():
+                continue
+            with Image.open(path) as source:
+                frame = source.convert("RGBA").copy()
+            frame.thumbnail((84, 84), Image.Resampling.LANCZOS)
+            canvas = Image.new("RGBA", (88, 88), (0, 0, 0, 0))
+            canvas.alpha_composite(
+                frame,
+                ((88 - frame.width) // 2, 88 - frame.height),
+            )
+            self.scene_hero_frames[frame_name] = ImageTk.PhotoImage(canvas)
         return sprites
 
     def _build_ui(self) -> None:
@@ -203,9 +234,12 @@ class MainWindow(ctk.CTk):
         self.scene.pack(fill="both", expand=True, padx=1, pady=1)
         self._draw_environment(force=True)
 
-        hero_image = self.scene_sprites.get("hero")
+        hero_image = self.scene_hero_frames.get(
+            "walk1",
+            self.scene_sprites.get("hero"),
+        )
         self.scene_hero = self.scene.create_image(
-            self.hero_scene_x,
+            self.journey.hero_home_x,
             90,
             image=hero_image,
             anchor="center",
@@ -333,6 +367,47 @@ class MainWindow(ctk.CTk):
         else:
             self._draw_fortress()
         canvas.tag_lower("environment")
+
+    def _draw_motion_layer(self) -> None:
+        self.scene.delete("motion")
+        offset = int(self.journey.background_scroll) % 48
+        _, ground, path, feature = self.MAP_THEMES[
+            self.game_state.campaign.map_index
+        ]
+        accent = {
+            "road": "#d4b96c",
+            "forest": "#78945f",
+            "camp": "#bf8052",
+            "hills": "#9a9a72",
+            "cemetery": "#8d8e98",
+            "bridge": "#b39767",
+            "ruins": "#9b9688",
+            "fog": "#d4d8d6",
+            "gate": "#a18d7f",
+            "fortress": "#8a828e",
+        }[feature]
+        for index in range(9):
+            x = index * 48 - offset - 20
+            self.scene.create_line(
+                x,
+                151,
+                x + 15,
+                149,
+                fill=accent,
+                width=2,
+                tags=("motion",),
+            )
+            self.scene.create_oval(
+                x + 24,
+                111,
+                x + 29,
+                115,
+                fill=ground,
+                outline=path,
+                tags=("motion",),
+            )
+        self.scene.tag_raise("motion", "environment")
+        self.scene.tag_lower("motion", "actor")
 
     def _draw_fields(self) -> None:
         for x in (20, 58, 294, 326):
@@ -649,68 +724,40 @@ class MainWindow(ctk.CTk):
                 else "#30253e"
             )
 
-    def _start_exploration(self, initial: bool = False) -> None:
-        self.journey_phase = "exploration"
-        self.journey_ticks_remaining = self.visual_rng.randint(30, 48)
-        self.hero_scene_x = 42 if initial else 28
-        self.hero_walk_frame = 0
-        self.scene_reward_text = ""
-        action = (
-            f"{self.hero.name} iniciou sua jornada por "
-            f"{self.game_state.campaign.current_map}."
-            if initial
-            else f"{self.hero.name} retomou a caminhada."
-        )
-        self._append_log(action)
-        self._refresh()
+    def _animation_loop(self) -> None:
+        now = perf_counter()
+        delta_time = now - self.last_frame_time
+        self.last_frame_time = now
 
-    def _journey_tick(self) -> None:
-        if self.journey_phase == "exploration":
-            self.hero_walk_frame += 1
-            self.hero_scene_x += 3
-            if self.hero_scene_x > 290:
-                self.hero_scene_x = 28
-            bob = -2 if self.hero_walk_frame % 4 < 2 else 0
-            self.scene.coords(self.scene_hero, self.hero_scene_x, 90 + bob)
-            self.scene.coords(
-                self.scene_hero_name,
-                max(72, min(270, self.hero_scene_x)),
-                130,
-            )
-            self._position_hero_hp(self.hero_scene_x)
-            self.journey_ticks_remaining -= 1
-            if self.journey_ticks_remaining <= 0:
-                self._begin_encounter()
-        self.after(self.JOURNEY_FRAME_MS, self._journey_tick)
+        for event in self.journey.update(delta_time):
+            if event == "encounter":
+                self._capture_display_enemy()
+                encounter_text = (
+                    f"Chefe {self.display_enemy_name} bloqueou a passagem!"
+                    if self.display_enemy_is_boss
+                    else f"{self.hero.name} encontrou "
+                    f"{self.display_enemy_name}."
+                )
+                self._append_log(encounter_text)
+            elif event == "fight":
+                self._append_log(
+                    f"Combate iniciado contra {self.display_enemy_name}."
+                )
+                self.after(200, self._combat_tick)
+            elif event == "explore":
+                self._append_log(f"{self.hero.name} retomou a caminhada.")
+            self._refresh()
 
-    def _begin_encounter(self) -> None:
-        if self.journey_phase != "exploration":
-            return
-        self.journey_phase = "encounter"
-        self.hero_scene_x = 76
-        enemy = self.combat.enemy
-        encounter_text = (
-            f"Chefe {enemy.name} bloqueou a passagem!"
-            if enemy.is_boss
-            else f"{self.hero.name} encontrou {enemy.name}."
-        )
-        self._append_log(encounter_text)
-        self._refresh()
-        self.after(self.ENCOUNTER_PAUSE_MS, self._begin_combat)
-
-    def _begin_combat(self) -> None:
-        if self.journey_phase != "encounter":
-            return
-        self.journey_phase = "combat"
-        self._append_log(f"Combate iniciado contra {self.combat.enemy.name}.")
-        self._refresh()
-        self.after(320, self._combat_tick)
+        self._refresh_scene()
+        self.after(self.ANIMATION_FRAME_MS, self._animation_loop)
 
     def _combat_tick(self) -> None:
-        if self.journey_phase != "combat":
+        if self.journey.phase != "fight":
             return
+        enemy_before_tick = self.combat.enemy
         important_event = False
         events = self.combat.tick()
+        self._capture_display_enemy(enemy_before_tick)
         for event in events:
             if event.kind in {
                 "victory",
@@ -740,6 +787,10 @@ class MainWindow(ctk.CTk):
         )
         if attack_event is not None:
             self._append_log(attack_event.message)
+            self.journey.trigger_attack(
+                attack_event.kind,
+                attack_event.amount or 0,
+            )
         if important_event:
             self.save_manager.save(self.game_state)
 
@@ -752,49 +803,36 @@ class MainWindow(ctk.CTk):
                 ),
                 None,
             )
-            self.scene_reward_text = victory_event.message
+            reward_text = victory_event.message
             if loot_event is not None:
-                self.scene_reward_text += f"\nLoot: {loot_event.item.name}"
-            self._append_log(self.scene_reward_text.replace("\n", "  •  "))
-            self.journey_phase = "reward"
+                reward_text += f"\nLoot: {loot_event.item.name}"
+            self._append_log(reward_text.replace("\n", "  •  "))
+            self.journey.show_victory(reward_text)
             self._refresh()
-            self.after(self.REWARD_PAUSE_MS, self._start_exploration)
             return
 
         if defeat_event is not None:
-            self.scene_reward_text = "O aventureiro caiu, mas retornará à estrada."
+            reward_text = "O aventureiro caiu, mas retornará à estrada."
             self._append_log(defeat_event.message)
-            self.journey_phase = "reward"
+            self.journey.show_defeat(reward_text)
             self._refresh()
-            self.after(self.REWARD_PAUSE_MS, self._start_exploration)
             return
 
         self._refresh()
-        if attack_event is not None:
-            self._animate_attack(attack_event.kind)
         self.after(self.COMBAT_INTERVAL_MS, self._combat_tick)
 
-    def _animate_attack(self, kind: str) -> None:
-        if kind == "hero_attack":
-            attacker = self.scene_hero
-            target = self.scene_enemy
-            delta = 10
-        else:
-            attacker = self.scene_enemy
-            target = self.scene_hero
-            delta = -10
-        self.scene.move(attacker, delta, 0)
-        self.scene.itemconfigure(target, state="hidden")
-        self.after(80, lambda: self._restore_damage_target(target))
-        self.after(150, lambda: self._restore_attacker(attacker, delta))
-
-    def _restore_damage_target(self, target: int) -> None:
-        if self.journey_phase == "combat":
-            self.scene.itemconfigure(target, state="normal")
-
-    def _restore_attacker(self, attacker: int, delta: int) -> None:
-        if self.journey_phase == "combat":
-            self.scene.move(attacker, -delta, 0)
+    def _capture_display_enemy(self, enemy: object | None = None) -> None:
+        enemy = enemy or self.combat.enemy
+        self.display_enemy_name = enemy.name
+        self.display_enemy_level = enemy.level
+        self.display_enemy_is_boss = enemy.is_boss
+        self.display_enemy_key = (
+            "boss"
+            if enemy.is_boss
+            else self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower())
+        )
+        self.display_enemy_hp = enemy.current_hp
+        self.display_enemy_max_hp = enemy.max_hp
 
     def _autosave(self) -> None:
         self.save_manager.save(self.game_state)
@@ -879,70 +917,99 @@ class MainWindow(ctk.CTk):
 
     def _refresh_scene(self) -> None:
         self._draw_environment()
-        enemy = self.combat.enemy
-        enemy_key = (
-            "boss"
-            if enemy.is_boss
-            else self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower())
+        self._draw_motion_layer()
+
+        hero_frame = self.journey.hero_frame
+        if self.journey.phase == "reward":
+            hero_frame = (
+                "dead"
+                if self.journey.reward_text.startswith("DERROTA")
+                else "victory"
+            )
+        elif self.journey.hero_hit_flash:
+            hero_frame = "hit"
+        hero_image = self.scene_hero_frames.get(
+            hero_frame,
+            self.scene_sprites.get("hero"),
         )
-        enemy_image = self.scene_sprites.get(enemy_key)
+        if hero_image is not None:
+            self.scene.itemconfigure(self.scene_hero, image=hero_image)
+
+        enemy_image = self.scene_sprites.get(self.display_enemy_key)
         if enemy_image is not None:
             self.scene.itemconfigure(self.scene_enemy, image=enemy_image)
 
-        enemy_ratio = self._ratio(enemy.current_hp, enemy.max_hp)
+        hero_x = self.journey.hero_x
+        enemy_x = self.journey.enemy_draw_x
+        self.scene.coords(
+            self.scene_hero,
+            hero_x,
+            90 + self.journey.hero_y_offset,
+        )
+        self.scene.coords(
+            self.scene_enemy,
+            enemy_x,
+            90 + self.journey.enemy_y_offset,
+        )
         self.scene.itemconfigure(
             self.scene_hero_name,
             text=f"{self.hero.name}  Nv.{self.hero.level}",
         )
-        self._position_hero_hp(self.hero_scene_x)
+        self.scene.coords(self.scene_hero_name, hero_x, 130)
+        self._position_hero_hp(hero_x)
 
-        show_enemy = self.journey_phase in {"encounter", "combat"}
+        show_enemy = (
+            self.journey.enemy_visible
+            and self.journey.enemy_opacity > 0.05
+        )
         enemy_state = "normal" if show_enemy else "hidden"
-        for item in (
+        self.scene.itemconfigure(
             self.scene_enemy,
+            state=(
+                "hidden"
+                if self.journey.enemy_hit_flash
+                else enemy_state
+            ),
+        )
+        for item in (
             self.scene_enemy_name,
             self.scene_enemy_hp_bg,
             self.scene_enemy_hp,
         ):
             self.scene.itemconfigure(item, state=enemy_state)
 
-        if self.journey_phase == "exploration":
+        if self.journey.phase == "explore":
             self.scene.itemconfigure(
                 self.scene_status,
                 text=f"EXPLORANDO  •  {self.game_state.campaign.current_map.upper()}",
             )
             self.scene.itemconfigure(self.scene_reward, state="hidden")
-        elif self.journey_phase == "encounter":
-            self.hero_scene_x = 76
-            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
-            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
-            self._position_hero_hp(self.hero_scene_x)
+        elif self.journey.phase == "encounter":
             self.scene.itemconfigure(self.scene_status, text="ENCONTRO!")
             self.scene.itemconfigure(self.scene_reward, state="hidden")
-        elif self.journey_phase == "combat":
-            self.hero_scene_x = 76
-            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
-            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
-            self._position_hero_hp(self.hero_scene_x)
+        elif self.journey.phase == "fight":
             self.scene.itemconfigure(self.scene_status, text="COMBATE AUTOMÁTICO")
             self.scene.itemconfigure(self.scene_reward, state="hidden")
         else:
-            self.hero_scene_x = 116
-            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
-            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
-            self._position_hero_hp(self.hero_scene_x)
             self.scene.itemconfigure(self.scene_status, text="RECOMPENSA")
             self.scene.itemconfigure(
                 self.scene_reward,
-                text=self.scene_reward_text,
+                text=self.journey.reward_text,
                 state="normal",
             )
 
-        self.scene.coords(self.scene_enemy, 270, 90)
-        self.scene.coords(self.scene_enemy_name, 270, 130)
+        enemy_label_x = max(216, min(270, enemy_x))
+        self.scene.coords(self.scene_enemy_name, enemy_label_x, 130)
         self.scene.itemconfigure(
             self.scene_enemy_name,
-            text=f"{'CHEFE ' if enemy.is_boss else ''}{enemy.name}  Nv.{enemy.level}",
+            text=(
+                f"{'CHEFE ' if self.display_enemy_is_boss else ''}"
+                f"{self.display_enemy_name}  Nv.{self.display_enemy_level}"
+            ),
+        )
+        enemy_ratio = self._ratio(
+            self.display_enemy_hp,
+            self.display_enemy_max_hp,
         )
         self.scene.coords(
             self.scene_enemy_hp,
@@ -951,8 +1018,20 @@ class MainWindow(ctk.CTk):
             216 + 108 * enemy_ratio,
             147,
         )
+
+        self.scene.delete("fx")
+        for floater in self.journey.floaters:
+            self.scene.create_text(
+                floater.x,
+                floater.y,
+                text=floater.text,
+                fill=floater.color,
+                font=("Consolas", 12, "bold"),
+                tags=("fx",),
+            )
         self.scene.tag_raise("actor")
         self.scene.tag_raise("hud")
+        self.scene.tag_raise("fx")
 
     def _position_hero_hp(self, center_x: float) -> None:
         left = max(6, min(228, center_x - 54))

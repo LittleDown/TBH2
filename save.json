@@ -3,12 +3,12 @@
   "hero": {
     "name": "Aventureiro",
     "level": 12,
-    "xp": 758,
+    "xp": 1064,
     "max_hp": 320,
-    "current_hp": 269,
+    "current_hp": 260,
     "base_attack": 43,
     "base_defense": 27,
-    "gold": 2082,
+    "gold": 2166,
     "strategy": "Balanceado",
     "equipment": {
       "weapon": {
@@ -21,13 +21,13 @@
         "defense_bonus": 0
       },
       "armor": {
-        "item_id": "9b271c63bdc4",
+        "item_id": "ddf88c417a93",
         "name": "Armadura de Couro",
         "rarity": "Raro",
         "slot": "armor",
-        "power": 7,
+        "power": 16,
         "attack_bonus": 0,
-        "defense_bonus": 7
+        "defense_bonus": 16
       },
       "accessory": null
     },
@@ -80,7 +80,7 @@
         "power": 7,
         "attack_bonus": 0,
         "defense_bonus": 7,
-        "equipped": true
+        "equipped": false
       },
       {
         "item_id": "e0f17b01dac4",
@@ -201,10 +201,20 @@
         "attack_bonus": 20,
         "defense_bonus": 0,
         "equipped": true
+      },
+      {
+        "item_id": "ddf88c417a93",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 16,
+        "attack_bonus": 0,
+        "defense_bonus": 16,
+        "equipped": true
       }
     ],
     "statistics": {
-      "enemies_defeated": 74,
+      "enemies_defeated": 76,
       "deaths": 0,
       "bosses_defeated": 0
     }
@@ -213,7 +223,7 @@
     "act": "Fronteira Esquecida",
     "map_index": 7,
     "map_name": "Trilha da Névoa",
-    "victories": 4,
+    "victories": 6,
     "target": 10,
     "act_completed": false
   }

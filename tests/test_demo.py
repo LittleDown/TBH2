@@ -94,6 +94,7 @@ class CombatTests(unittest.TestCase):
         self.assertEqual(state.hero.enemies_defeated, 1)
         self.assertEqual(state.campaign.victories, 1)
         self.assertIn("victory", {event.kind for event in events})
+        self.assertEqual(events[0].amount, 10)
 
     def test_boss_is_created_on_final_map_threshold(self) -> None:
         state = GameState(campaign=CampaignProgress(map_index=9, victories=9))
