@@ -27,11 +27,16 @@ herói, inimigos, combate, itens, save e uma interface CustomTkinter.
 - sprites temporários em pixel art para herói, inimigos, chefe e loot;
 - painel de equipamentos com Arma, Armadura e Acessório;
 - inventário fixo em grade 5x4 com vinte espaços visuais;
+- estado principal de exploração com caminhada horizontal em loop;
+- transições visuais entre exploração, encontro, combate e recompensa;
+- animações leves de ataque e dano;
+- ambientes distintos para os dez mapas do Ato I;
 - testes automatizados para combate, campanha, estratégias e persistência.
 
 ## Limitações conhecidas
 
 - os sprites em pixel art ainda são placeholders e não arte definitiva;
+- os ambientes usam formas simples e paletas temporárias;
 - não existem sprites animados, áudio ou efeitos avançados;
 - o conteúdo está definido em módulos Python, ainda não em arquivos declarativos;
 - não há progressão offline;

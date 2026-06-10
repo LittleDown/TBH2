@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from collections import deque
 from pathlib import Path
+from random import Random
+import tkinter as tk
 
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
 
 from combat.combat import CombatEngine
 from game_state import GameState
@@ -14,6 +16,9 @@ from save.save_manager import SaveManager
 
 class MainWindow(ctk.CTk):
     COMBAT_INTERVAL_MS = 800
+    JOURNEY_FRAME_MS = 80
+    ENCOUNTER_PAUSE_MS = 550
+    REWARD_PAUSE_MS = 1_800
     SAVE_INTERVAL_MS = 10_000
     INVENTORY_CAPACITY = 20
     COLORS = {
@@ -39,6 +44,18 @@ class MainWindow(ctk.CTk):
         "Lobo": "wolf",
         "Esqueleto": "skeleton",
     }
+    MAP_THEMES = (
+        ("#879e9b", "#516541", "#9a7953", "road"),
+        ("#587565", "#2e4b35", "#745d43", "forest"),
+        ("#9b7657", "#5d4d35", "#8a6a48", "camp"),
+        ("#718294", "#4d5a42", "#817258", "hills"),
+        ("#515463", "#313541", "#665f5c", "cemetery"),
+        ("#6f8791", "#3f5b51", "#80694d", "bridge"),
+        ("#77766e", "#4d5041", "#756b55", "ruins"),
+        ("#89929a", "#56605d", "#777369", "fog"),
+        ("#7e6c65", "#4d433e", "#76624d", "gate"),
+        ("#514d58", "#36333c", "#62564e", "fortress"),
+    )
 
     def __init__(self, state: GameState, save_manager: SaveManager) -> None:
         super().__init__()
@@ -52,6 +69,13 @@ class MainWindow(ctk.CTk):
         self.map_rows: list[ctk.CTkLabel] = []
         self.inventory_signature: tuple[tuple[str, bool], ...] | None = None
         self.inventory_detail_text = "Selecione um item para equipar."
+        self.visual_rng = Random()
+        self.journey_phase = "exploration"
+        self.journey_ticks_remaining = 0
+        self.hero_scene_x = 42
+        self.hero_walk_frame = 0
+        self.scene_map_index = -1
+        self.scene_reward_text = ""
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
@@ -63,16 +87,9 @@ class MainWindow(ctk.CTk):
         self.sprites = self._load_sprites()
 
         self._build_ui()
-        initial_enemy = self.combat.enemy
-        initial_message = (
-            f"Chefe {initial_enemy.name} surgiu no caminho!"
-            if initial_enemy.is_boss
-            else f"Um {initial_enemy.name} nível {initial_enemy.level} apareceu."
-        )
-        self._append_log(initial_message)
         self._show_panel("Hero")
-        self._refresh()
-        self.after(self.COMBAT_INTERVAL_MS, self._combat_tick)
+        self._start_exploration(initial=True)
+        self.after(self.JOURNEY_FRAME_MS, self._journey_tick)
         self.after(self.SAVE_INTERVAL_MS, self._autosave)
 
     def _position_as_companion(self) -> None:
@@ -86,6 +103,7 @@ class MainWindow(ctk.CTk):
     def _load_sprites(self) -> dict[str, ctk.CTkImage]:
         asset_dir = Path(__file__).resolve().parents[1] / "assets" / "sprites"
         sprites: dict[str, ctk.CTkImage] = {}
+        self.scene_sprites: dict[str, ImageTk.PhotoImage] = {}
         sizes = {
             "hero": (82, 82),
             "goblin": (82, 82),
@@ -105,6 +123,9 @@ class MainWindow(ctk.CTk):
                 dark_image=image,
                 size=size,
             )
+            scene_size = (78, 78) if name != "boss" else (84, 84)
+            scene_image = image.resize(scene_size, Image.Resampling.NEAREST)
+            self.scene_sprites[name] = ImageTk.PhotoImage(scene_image)
         return sprites
 
     def _build_ui(self) -> None:
@@ -160,7 +181,7 @@ class MainWindow(ctk.CTk):
         self.map_header.pack(fill="x")
 
     def _build_combat_area(self) -> None:
-        combat_frame = ctk.CTkFrame(
+        self.journey_frame = ctk.CTkFrame(
             self,
             height=177,
             fg_color=self.COLORS["panel"],
@@ -168,101 +189,237 @@ class MainWindow(ctk.CTk):
             border_color="#302638",
             corner_radius=8,
         )
-        combat_frame.pack(fill="x", padx=8, pady=(6, 0))
-        combat_frame.pack_propagate(False)
+        self.journey_frame.pack(fill="x", padx=8, pady=(6, 0))
+        self.journey_frame.pack_propagate(False)
 
-        ctk.CTkLabel(
-            combat_frame,
-            text="ENCONTRO ATUAL",
-            height=20,
-            font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
-            text_color=self.COLORS["gold"],
-        ).pack(fill="x")
-
-        battle = ctk.CTkFrame(combat_frame, fg_color="transparent")
-        battle.pack(fill="both", expand=True, padx=5, pady=(0, 5))
-        battle.grid_columnconfigure((0, 1), weight=1, uniform="combat")
-        battle.grid_rowconfigure(0, weight=1)
-
-        hero_card = self._entity_card(battle, 0, "#183a35")
-        self.hero_avatar = hero_card["avatar"]
-        self.hero_name = hero_card["name"]
-        self.hero_hp_text = hero_card["hp_text"]
-        self.hero_hp_bar = hero_card["hp_bar"]
-
-        enemy_card = self._entity_card(battle, 1, "#432536")
-        self.enemy_avatar = enemy_card["avatar"]
-        self.enemy_name = enemy_card["name"]
-        self.enemy_hp_text = enemy_card["hp_text"]
-        self.enemy_hp_bar = enemy_card["hp_bar"]
-
-        versus_badge = ctk.CTkFrame(
-            battle,
-            width=29,
-            height=29,
-            fg_color="#2a2034",
-            border_width=1,
-            border_color=self.COLORS["gold_dark"],
-            corner_radius=14,
+        self.scene = tk.Canvas(
+            self.journey_frame,
+            width=342,
+            height=173,
+            highlightthickness=0,
+            bd=0,
+            background="#17131f",
         )
-        versus_badge.place(relx=0.5, rely=0.43, anchor="center")
-        versus_badge.pack_propagate(False)
-        ctk.CTkLabel(
-            versus_badge,
-            text="VS",
-            font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
-            text_color=self.COLORS["gold"],
-        ).pack(fill="both", expand=True)
+        self.scene.pack(fill="both", expand=True, padx=1, pady=1)
+        self._draw_environment(force=True)
 
-    def _entity_card(
-        self, parent: ctk.CTkFrame, column: int, accent: str
-    ) -> dict[str, ctk.CTkBaseClass]:
-        card = ctk.CTkFrame(
-            parent,
-            fg_color=self.COLORS["panel_alt"],
-            border_width=1,
-            border_color=accent,
-            corner_radius=7,
+        hero_image = self.scene_sprites.get("hero")
+        self.scene_hero = self.scene.create_image(
+            self.hero_scene_x,
+            90,
+            image=hero_image,
+            anchor="center",
+            tags=("actor",),
         )
-        card.grid(
-            row=0,
-            column=column,
-            padx=(1, 3) if column == 0 else (3, 1),
-            sticky="nsew",
+        self.scene_enemy = self.scene.create_image(
+            270,
+            90,
+            image=self.scene_sprites.get("goblin"),
+            anchor="center",
+            state="hidden",
+            tags=("actor",),
         )
-
-        avatar = ctk.CTkLabel(card, text="", width=86, height=86)
-        avatar.pack(pady=(2, 0))
-
-        name = ctk.CTkLabel(
-            card,
+        self.scene_status = self.scene.create_text(
+            171,
+            12,
+            text="EXPLORANDO",
+            fill=self.COLORS["gold"],
+            font=("Consolas", 9, "bold"),
+            tags=("hud",),
+        )
+        self.scene_reward = self.scene.create_text(
+            171,
+            37,
             text="",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            fill="#f3d79b",
+            font=("Consolas", 9, "bold"),
+            width=300,
+            justify="center",
+            state="hidden",
+            tags=("hud",),
         )
-        name.pack()
-
-        hp_text = ctk.CTkLabel(
-            card,
+        self.scene_hero_name = self.scene.create_text(
+            72,
+            130,
             text="",
-            font=ctk.CTkFont(family="Consolas", size=9),
-            text_color="#d9d2dd",
+            fill="#f2edf5",
+            font=("Consolas", 9, "bold"),
+            tags=("hud",),
         )
-        hp_text.pack()
+        self.scene_enemy_name = self.scene.create_text(
+            270,
+            130,
+            text="",
+            fill="#f2edf5",
+            font=("Consolas", 9, "bold"),
+            state="hidden",
+            tags=("hud",),
+        )
+        self.scene_hero_hp_bg = self.scene.create_rectangle(
+            18, 140, 126, 147, fill="#3b303e", outline="", tags=("hud",)
+        )
+        self.scene_hero_hp = self.scene.create_rectangle(
+            18, 140, 126, 147, fill=self.COLORS["hp"], outline="", tags=("hud",)
+        )
+        self.scene_enemy_hp_bg = self.scene.create_rectangle(
+            216,
+            140,
+            324,
+            147,
+            fill="#3b303e",
+            outline="",
+            state="hidden",
+            tags=("hud",),
+        )
+        self.scene_enemy_hp = self.scene.create_rectangle(
+            216,
+            140,
+            324,
+            147,
+            fill=self.COLORS["hp"],
+            outline="",
+            state="hidden",
+            tags=("hud",),
+        )
+        self.scene.tag_raise("actor")
+        self.scene.tag_raise("hud")
 
-        hp_bar = ctk.CTkProgressBar(
-            card,
-            width=132,
-            height=8,
-            progress_color=self.COLORS["hp"],
-            fg_color="#3b303e",
+    def _draw_environment(self, force: bool = False) -> None:
+        map_index = self.game_state.campaign.map_index
+        if not force and map_index == self.scene_map_index:
+            return
+        self.scene_map_index = map_index
+        sky, ground, path, feature = self.MAP_THEMES[map_index]
+        canvas = self.scene
+        canvas.delete("environment")
+        canvas.create_rectangle(
+            0, 0, 342, 173, fill=sky, outline="", tags=("environment",)
         )
-        hp_bar.pack(pady=(1, 5))
-        return {
-            "avatar": avatar,
-            "name": name,
-            "hp_text": hp_text,
-            "hp_bar": hp_bar,
-        }
+        canvas.create_rectangle(
+            0, 70, 342, 173, fill=ground, outline="", tags=("environment",)
+        )
+        canvas.create_polygon(
+            0,
+            120,
+            342,
+            105,
+            342,
+            154,
+            0,
+            162,
+            fill=path,
+            outline="",
+            tags=("environment",),
+        )
+
+        if feature == "road":
+            self._draw_fields()
+        elif feature == "forest":
+            self._draw_forest()
+        elif feature == "camp":
+            self._draw_camp()
+        elif feature == "hills":
+            self._draw_hills()
+        elif feature == "cemetery":
+            self._draw_cemetery()
+        elif feature == "bridge":
+            self._draw_bridge()
+        elif feature == "ruins":
+            self._draw_ruins()
+        elif feature == "fog":
+            self._draw_fog()
+        elif feature == "gate":
+            self._draw_gate()
+        else:
+            self._draw_fortress()
+        canvas.tag_lower("environment")
+
+    def _draw_fields(self) -> None:
+        for x in (20, 58, 294, 326):
+            self.scene.create_line(
+                x, 79, x - 8, 108, fill="#c0a45c", width=2, tags=("environment",)
+            )
+        self.scene.create_oval(
+            235, 24, 282, 48, fill="#d7dfcf", outline="", tags=("environment",)
+        )
+
+    def _draw_forest(self) -> None:
+        for x in (18, 52, 292, 326):
+            self.scene.create_rectangle(
+                x - 4, 48, x + 4, 103, fill="#4c3829", outline="", tags=("environment",)
+            )
+            self.scene.create_oval(
+                x - 22, 20, x + 22, 72, fill="#274c32", outline="", tags=("environment",)
+            )
+
+    def _draw_camp(self) -> None:
+        self.scene.create_polygon(
+            20, 105, 52, 64, 84, 105, fill="#7c4931", outline="", tags=("environment",)
+        )
+        self.scene.create_line(
+            226, 96, 248, 66, 270, 96, fill="#e5a044", width=3, tags=("environment",)
+        )
+        self.scene.create_oval(
+            239, 80, 257, 101, fill="#d76c2f", outline="", tags=("environment",)
+        )
+
+    def _draw_hills(self) -> None:
+        self.scene.create_oval(
+            -60, 34, 155, 132, fill="#5e6b55", outline="", tags=("environment",)
+        )
+        self.scene.create_oval(
+            205, 28, 390, 128, fill="#596650", outline="", tags=("environment",)
+        )
+
+    def _draw_cemetery(self) -> None:
+        for x, y in ((24, 92), (58, 82), (287, 86), (319, 96)):
+            self.scene.create_rectangle(
+                x, y - 24, x + 15, y, fill="#777987", outline="", tags=("environment",)
+            )
+            self.scene.create_oval(
+                x, y - 31, x + 15, y - 17, fill="#777987", outline="", tags=("environment",)
+            )
+
+    def _draw_bridge(self) -> None:
+        self.scene.create_rectangle(
+            0, 115, 342, 173, fill="#34545c", outline="", tags=("environment",)
+        )
+        for x in range(0, 342, 28):
+            self.scene.create_rectangle(
+                x, 112, x + 24, 150, fill="#80694d", outline="#4a3829", tags=("environment",)
+            )
+
+    def _draw_ruins(self) -> None:
+        for x, height in ((18, 50), (46, 34), (286, 46), (316, 62)):
+            self.scene.create_rectangle(
+                x, 104 - height, x + 19, 104, fill="#77746b", outline="", tags=("environment",)
+            )
+
+    def _draw_fog(self) -> None:
+        for y in (40, 65, 92):
+            self.scene.create_line(
+                5, y, 337, y - 5, fill="#b1b6b6", width=4, tags=("environment",)
+            )
+
+    def _draw_gate(self) -> None:
+        self.scene.create_rectangle(
+            266, 38, 337, 112, fill="#63564e", outline="", tags=("environment",)
+        )
+        self.scene.create_arc(
+            278, 55, 325, 122, start=0, extent=180, fill="#25232a", outline="", tags=("environment",)
+        )
+
+    def _draw_fortress(self) -> None:
+        self.scene.create_rectangle(
+            230, 28, 341, 113, fill="#4a4650", outline="", tags=("environment",)
+        )
+        for x in (230, 260, 290, 320):
+            self.scene.create_rectangle(
+                x, 18, x + 16, 44, fill="#4a4650", outline="", tags=("environment",)
+            )
+        self.scene.create_arc(
+            270, 62, 315, 126, start=0, extent=180, fill="#201e25", outline="", tags=("environment",)
+        )
 
     def _build_last_action(self) -> None:
         action = ctk.CTkFrame(
@@ -492,10 +649,69 @@ class MainWindow(ctk.CTk):
                 else "#30253e"
             )
 
+    def _start_exploration(self, initial: bool = False) -> None:
+        self.journey_phase = "exploration"
+        self.journey_ticks_remaining = self.visual_rng.randint(30, 48)
+        self.hero_scene_x = 42 if initial else 28
+        self.hero_walk_frame = 0
+        self.scene_reward_text = ""
+        action = (
+            f"{self.hero.name} iniciou sua jornada por "
+            f"{self.game_state.campaign.current_map}."
+            if initial
+            else f"{self.hero.name} retomou a caminhada."
+        )
+        self._append_log(action)
+        self._refresh()
+
+    def _journey_tick(self) -> None:
+        if self.journey_phase == "exploration":
+            self.hero_walk_frame += 1
+            self.hero_scene_x += 3
+            if self.hero_scene_x > 290:
+                self.hero_scene_x = 28
+            bob = -2 if self.hero_walk_frame % 4 < 2 else 0
+            self.scene.coords(self.scene_hero, self.hero_scene_x, 90 + bob)
+            self.scene.coords(
+                self.scene_hero_name,
+                max(72, min(270, self.hero_scene_x)),
+                130,
+            )
+            self._position_hero_hp(self.hero_scene_x)
+            self.journey_ticks_remaining -= 1
+            if self.journey_ticks_remaining <= 0:
+                self._begin_encounter()
+        self.after(self.JOURNEY_FRAME_MS, self._journey_tick)
+
+    def _begin_encounter(self) -> None:
+        if self.journey_phase != "exploration":
+            return
+        self.journey_phase = "encounter"
+        self.hero_scene_x = 76
+        enemy = self.combat.enemy
+        encounter_text = (
+            f"Chefe {enemy.name} bloqueou a passagem!"
+            if enemy.is_boss
+            else f"{self.hero.name} encontrou {enemy.name}."
+        )
+        self._append_log(encounter_text)
+        self._refresh()
+        self.after(self.ENCOUNTER_PAUSE_MS, self._begin_combat)
+
+    def _begin_combat(self) -> None:
+        if self.journey_phase != "encounter":
+            return
+        self.journey_phase = "combat"
+        self._append_log(f"Combate iniciado contra {self.combat.enemy.name}.")
+        self._refresh()
+        self.after(320, self._combat_tick)
+
     def _combat_tick(self) -> None:
+        if self.journey_phase != "combat":
+            return
         important_event = False
-        for event in self.combat.tick():
-            self._append_log(event.message)
+        events = self.combat.tick()
+        for event in events:
             if event.kind in {
                 "victory",
                 "defeat",
@@ -505,10 +721,80 @@ class MainWindow(ctk.CTk):
                 "act_complete",
             }:
                 important_event = True
+
+        victory_event = next(
+            (event for event in events if event.kind == "victory"),
+            None,
+        )
+        defeat_event = next(
+            (event for event in events if event.kind == "defeat"),
+            None,
+        )
+        attack_event = next(
+            (
+                event
+                for event in events
+                if event.kind in {"hero_attack", "enemy_attack"}
+            ),
+            None,
+        )
+        if attack_event is not None:
+            self._append_log(attack_event.message)
         if important_event:
             self.save_manager.save(self.game_state)
+
+        if victory_event is not None:
+            loot_event = next(
+                (
+                    event
+                    for event in events
+                    if event.kind == "loot" and event.item is not None
+                ),
+                None,
+            )
+            self.scene_reward_text = victory_event.message
+            if loot_event is not None:
+                self.scene_reward_text += f"\nLoot: {loot_event.item.name}"
+            self._append_log(self.scene_reward_text.replace("\n", "  •  "))
+            self.journey_phase = "reward"
+            self._refresh()
+            self.after(self.REWARD_PAUSE_MS, self._start_exploration)
+            return
+
+        if defeat_event is not None:
+            self.scene_reward_text = "O aventureiro caiu, mas retornará à estrada."
+            self._append_log(defeat_event.message)
+            self.journey_phase = "reward"
+            self._refresh()
+            self.after(self.REWARD_PAUSE_MS, self._start_exploration)
+            return
+
         self._refresh()
+        if attack_event is not None:
+            self._animate_attack(attack_event.kind)
         self.after(self.COMBAT_INTERVAL_MS, self._combat_tick)
+
+    def _animate_attack(self, kind: str) -> None:
+        if kind == "hero_attack":
+            attacker = self.scene_hero
+            target = self.scene_enemy
+            delta = 10
+        else:
+            attacker = self.scene_enemy
+            target = self.scene_hero
+            delta = -10
+        self.scene.move(attacker, delta, 0)
+        self.scene.itemconfigure(target, state="hidden")
+        self.after(80, lambda: self._restore_damage_target(target))
+        self.after(150, lambda: self._restore_attacker(attacker, delta))
+
+    def _restore_damage_target(self, target: int) -> None:
+        if self.journey_phase == "combat":
+            self.scene.itemconfigure(target, state="normal")
+
+    def _restore_attacker(self, attacker: int, delta: int) -> None:
+        if self.journey_phase == "combat":
+            self.scene.move(attacker, -delta, 0)
 
     def _autosave(self) -> None:
         self.save_manager.save(self.game_state)
@@ -554,34 +840,11 @@ class MainWindow(ctk.CTk):
         )
 
         hero_sprite = self.sprites.get("hero")
-        self.hero_avatar.configure(
-            image=hero_sprite,
-            text="" if hero_sprite else self.hero.name[0].upper(),
-        )
         self.hero_profile_sprite.configure(
             image=hero_sprite,
             text="" if hero_sprite else self.hero.name[0].upper(),
         )
-        self.hero_name.configure(text=f"{self.hero.name}  Nv.{self.hero.level}")
-        self.hero_hp_text.configure(
-            text=f"HP {self.hero.current_hp}/{self.hero.max_hp}"
-        )
-        self.hero_hp_bar.set(self._ratio(self.hero.current_hp, self.hero.max_hp))
-
-        enemy_key = (
-            "boss"
-            if enemy.is_boss
-            else self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower())
-        )
-        enemy_sprite = self.sprites.get(enemy_key)
-        self.enemy_avatar.configure(
-            image=enemy_sprite,
-            text="" if enemy_sprite else enemy.name[0].upper(),
-        )
-        enemy_prefix = "CHEFE " if enemy.is_boss else ""
-        self.enemy_name.configure(text=f"{enemy_prefix}{enemy.name}  Nv.{enemy.level}")
-        self.enemy_hp_text.configure(text=f"HP {enemy.current_hp}/{enemy.max_hp}")
-        self.enemy_hp_bar.set(self._ratio(enemy.current_hp, enemy.max_hp))
+        self._refresh_scene()
 
         self.hero_stats.configure(
             text=(
@@ -613,6 +876,96 @@ class MainWindow(ctk.CTk):
         self.event_log.configure(text="\n".join(self.log_lines))
         self._refresh_inventory()
         self._refresh_map()
+
+    def _refresh_scene(self) -> None:
+        self._draw_environment()
+        enemy = self.combat.enemy
+        enemy_key = (
+            "boss"
+            if enemy.is_boss
+            else self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower())
+        )
+        enemy_image = self.scene_sprites.get(enemy_key)
+        if enemy_image is not None:
+            self.scene.itemconfigure(self.scene_enemy, image=enemy_image)
+
+        enemy_ratio = self._ratio(enemy.current_hp, enemy.max_hp)
+        self.scene.itemconfigure(
+            self.scene_hero_name,
+            text=f"{self.hero.name}  Nv.{self.hero.level}",
+        )
+        self._position_hero_hp(self.hero_scene_x)
+
+        show_enemy = self.journey_phase in {"encounter", "combat"}
+        enemy_state = "normal" if show_enemy else "hidden"
+        for item in (
+            self.scene_enemy,
+            self.scene_enemy_name,
+            self.scene_enemy_hp_bg,
+            self.scene_enemy_hp,
+        ):
+            self.scene.itemconfigure(item, state=enemy_state)
+
+        if self.journey_phase == "exploration":
+            self.scene.itemconfigure(
+                self.scene_status,
+                text=f"EXPLORANDO  •  {self.game_state.campaign.current_map.upper()}",
+            )
+            self.scene.itemconfigure(self.scene_reward, state="hidden")
+        elif self.journey_phase == "encounter":
+            self.hero_scene_x = 76
+            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
+            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
+            self._position_hero_hp(self.hero_scene_x)
+            self.scene.itemconfigure(self.scene_status, text="ENCONTRO!")
+            self.scene.itemconfigure(self.scene_reward, state="hidden")
+        elif self.journey_phase == "combat":
+            self.hero_scene_x = 76
+            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
+            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
+            self._position_hero_hp(self.hero_scene_x)
+            self.scene.itemconfigure(self.scene_status, text="COMBATE AUTOMÁTICO")
+            self.scene.itemconfigure(self.scene_reward, state="hidden")
+        else:
+            self.hero_scene_x = 116
+            self.scene.coords(self.scene_hero, self.hero_scene_x, 90)
+            self.scene.coords(self.scene_hero_name, self.hero_scene_x, 130)
+            self._position_hero_hp(self.hero_scene_x)
+            self.scene.itemconfigure(self.scene_status, text="RECOMPENSA")
+            self.scene.itemconfigure(
+                self.scene_reward,
+                text=self.scene_reward_text,
+                state="normal",
+            )
+
+        self.scene.coords(self.scene_enemy, 270, 90)
+        self.scene.coords(self.scene_enemy_name, 270, 130)
+        self.scene.itemconfigure(
+            self.scene_enemy_name,
+            text=f"{'CHEFE ' if enemy.is_boss else ''}{enemy.name}  Nv.{enemy.level}",
+        )
+        self.scene.coords(
+            self.scene_enemy_hp,
+            216,
+            140,
+            216 + 108 * enemy_ratio,
+            147,
+        )
+        self.scene.tag_raise("actor")
+        self.scene.tag_raise("hud")
+
+    def _position_hero_hp(self, center_x: float) -> None:
+        left = max(6, min(228, center_x - 54))
+        right = left + 108
+        self.scene.coords(self.scene_hero_hp_bg, left, 140, right, 147)
+        hero_ratio = self._ratio(self.hero.current_hp, self.hero.max_hp)
+        self.scene.coords(
+            self.scene_hero_hp,
+            left,
+            140,
+            left + 108 * hero_ratio,
+            147,
+        )
 
     def _refresh_inventory(self) -> None:
         visible_items = self.hero.inventory[-self.INVENTORY_CAPACITY :]
