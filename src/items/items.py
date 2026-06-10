@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, field
 from random import Random
 from typing import Any, Literal
+from uuid import uuid4
 
 ItemSlot = Literal["weapon", "armor"]
 Rarity = Literal["Comum", "Raro", "Épico"]
@@ -13,44 +14,54 @@ class Item:
     name: str
     rarity: Rarity
     slot: ItemSlot
+    power: int
     attack_bonus: int = 0
     defense_bonus: int = 0
-
-    @property
-    def power(self) -> int:
-        return self.attack_bonus + self.defense_bonus
+    item_id: str = field(default_factory=lambda: uuid4().hex[:12])
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "item_id": self.item_id,
+            "name": self.name,
+            "rarity": self.rarity,
+            "slot": self.slot,
+            "power": self.power,
+            "attack_bonus": self.attack_bonus,
+            "defense_bonus": self.defense_bonus,
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Item:
+        attack_bonus = int(data.get("attack_bonus", 0))
+        defense_bonus = int(data.get("defense_bonus", 0))
         return cls(
             name=str(data["name"]),
             rarity=data["rarity"],
             slot=data["slot"],
-            attack_bonus=int(data.get("attack_bonus", 0)),
-            defense_bonus=int(data.get("defense_bonus", 0)),
+            power=max(1, int(data.get("power", attack_bonus + defense_bonus or 1))),
+            attack_bonus=attack_bonus,
+            defense_bonus=defense_bonus,
+            item_id=str(data.get("item_id") or uuid4().hex[:12]),
         )
 
 
-LOOT_TABLE: dict[Rarity, tuple[Item, ...]] = {
+ITEM_BASES: dict[Rarity, tuple[tuple[str, ItemSlot, int], ...]] = {
     "Comum": (
-        Item("Espada Enferrujada", "Comum", "weapon", attack_bonus=2),
-        Item("Escudo de Madeira", "Comum", "armor", defense_bonus=1),
+        ("Espada Enferrujada", "weapon", 2),
+        ("Escudo de Madeira", "armor", 2),
     ),
     "Raro": (
-        Item("Machado do Caçador", "Raro", "weapon", attack_bonus=5),
-        Item("Armadura de Couro", "Raro", "armor", defense_bonus=4),
+        ("Machado do Caçador", "weapon", 5),
+        ("Armadura de Couro", "armor", 5),
     ),
     "Épico": (
-        Item("Lâmina Carmesim", "Épico", "weapon", attack_bonus=10),
-        Item("Armadura do Guardião", "Épico", "armor", defense_bonus=8),
+        ("Lâmina Carmesim", "weapon", 10),
+        ("Armadura do Guardião", "armor", 10),
     ),
 }
 
 
-def roll_loot(rng: Random | None = None) -> Item | None:
+def roll_loot(hero_level: int, rng: Random | None = None) -> Item | None:
     randomizer = rng or Random()
     roll = randomizer.random()
     if roll < 0.70:
@@ -61,5 +72,14 @@ def roll_loot(rng: Random | None = None) -> Item | None:
         rarity = "Raro"
     else:
         rarity = "Épico"
-    return randomizer.choice(LOOT_TABLE[rarity])
 
+    name, slot, base_power = randomizer.choice(ITEM_BASES[rarity])
+    power = base_power + max(0, hero_level - 1)
+    return Item(
+        name=name,
+        rarity=rarity,
+        slot=slot,
+        power=power,
+        attack_bonus=power if slot == "weapon" else 0,
+        defense_bonus=power if slot == "armor" else 0,
+    )

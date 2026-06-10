@@ -76,6 +76,7 @@ verdade após esta migração.
 - [Modelo de dados](technical/02_DATA_MODEL.md)
 - [Fórmulas de balanceamento](technical/03_BALANCE_FORMULAS.md)
 - [Roadmap](technical/04_ROADMAP.md)
+- [Arquitetura técnica](technical/05_ARCHITECTURE.md)
 
 ### Histórico
 
@@ -105,4 +106,3 @@ verdade após esta migração.
 ## Histórico de Alterações
 
 - 2026-06-10: criada a arquitetura modular inicial.
-

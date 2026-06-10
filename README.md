@@ -9,6 +9,20 @@ aplicações.
 O projeto busca combinar progressão idle, campanha estruturada, loot escalável e
 decisões de baixa frequência em uma interface lateral compacta.
 
+## Demo Técnica Jogável
+
+A base Python agora inclui uma demo compacta de 360x600 com:
+
+- combate automático entre herói, Goblin, Lobo e Esqueleto;
+- três estratégias selecionáveis: Agressivo, Balanceado e Defensivo;
+- experiência, level up, ouro, mortes e renascimento;
+- loot Comum, Raro e Épico com Poder escalável;
+- inventário visual, autoequipamento e equipamento manual por clique;
+- dez mapas do Ato I, com dez vitórias por mapa;
+- chefe Capitão Ossonegro e conclusão do Ato I;
+- abas Hero, Inventory e Map;
+- save JSON versionado e migração do save antigo.
+
 ## Documentação
 
 A documentação de design, balanceamento e arquitetura está organizada por
@@ -21,20 +35,50 @@ Documentos de entrada:
 - [Progressão](docs/core/02_PROGRESSION.md)
 - [Combate](docs/core/03_COMBAT.md)
 - [Loot e economia](docs/core/04_LOOT_ECONOMY.md)
+- [Arquitetura técnica](docs/technical/05_ARCHITECTURE.md)
 - [Roadmap](docs/technical/04_ROADMAP.md)
+- [Relatório da demo](docs/DEMO_IMPLEMENTATION.md)
 
-## Protótipo
+## Requisitos
 
-O código existente representa uma prova de conceito anterior à documentação
-modular. As próximas implementações devem usar os documentos de domínio como
-fonte de decisão.
+- Windows 10 ou 11;
+- Python 3.12 ou superior;
+- dependências de `requirements.txt`.
 
-## Execução Atual
+## Execução
 
-Requer Python 3.12+ e CustomTkinter.
+No PowerShell, a partir da raiz do projeto:
 
 ```powershell
-python -m pip install -r requirements.txt
-python src/main.py
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe src\main.py
 ```
 
+O progresso é salvo automaticamente em `save.json` a cada evento importante,
+a cada dez segundos e ao fechar a janela.
+
+## Controles
+
+- `Hero`: atributos, equipamentos e troca de estratégia.
+- `Inventory`: clique em um item para equipá-lo.
+- `Map`: acompanhe a campanha e o progresso até o chefe.
+
+## Testes
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Arquivos RAR analisados
+
+O RAR de aproximadamente 157 MB contém o build Unity/IL2CPP `1.00.11`, sem
+código-fonte editável. O RAR menor contém saves e logs locais desse build. A base
+correta para esta implementação é o projeto Python deste repositório.
+
+## Limitações da demo
+
+- arte e animações usam componentes visuais temporários;
+- não há áudio, loja, habilidades, classes, talentos ou progresso offline;
+- após concluir o Ato I, o combate continua em modo livre no último mapa;
+- o balanceamento é inicial e serve apenas para validar o loop.

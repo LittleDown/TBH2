@@ -15,6 +15,7 @@ Draft
 - [Sistema de monstros](../monsters/01_MONSTER_SYSTEM.md)
 - [Sistema de itens](../items/01_ITEM_SYSTEM.md)
 - [Estrutura do mundo](../maps/01_WORLD_STRUCTURE.md)
+- [Arquitetura técnica](05_ARCHITECTURE.md)
 
 ## Visão Geral
 
@@ -57,4 +58,3 @@ Draft
 ## Histórico de Alterações
 
 - 2026-06-10: criado o template modular.
-

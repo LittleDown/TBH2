@@ -12,6 +12,7 @@ Draft
 
 - [Visão](../core/00_VISION.md)
 - [Índice](../README.md)
+- [Arquitetura técnica](05_ARCHITECTURE.md)
 
 ## Visão Geral
 
@@ -54,4 +55,3 @@ Draft
 ## Histórico de Alterações
 
 - 2026-06-10: criado o template modular.
-
