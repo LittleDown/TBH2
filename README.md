@@ -1,26 +1,40 @@
-# TBH2 v0.1
+# TBH2 - TaskBar Hero 2
 
-TaskBar Hero 2 é um protótipo de Idle RPG para Windows com combate automático,
-progressão, loot, equipamento automático e persistência local.
+Idle RPG para Windows concebido como um companheiro de Taskbar. O herói combate,
+evolui e encontra recompensas automaticamente enquanto o usuário utiliza outras
+aplicações.
 
-## Requisitos
+## Projeto
 
-- Python 3.12+
-- CustomTkinter
+O projeto busca combinar progressão idle, campanha estruturada, loot escalável e
+decisões de baixa frequência em uma interface lateral compacta.
 
-## Instalação
+## Documentação
+
+A documentação de design, balanceamento e arquitetura está organizada por
+domínios em [`docs/README.md`](docs/README.md).
+
+Documentos de entrada:
+
+- [Visão do projeto](docs/core/00_VISION.md)
+- [Gameplay central](docs/core/01_CORE_GAMEPLAY.md)
+- [Progressão](docs/core/02_PROGRESSION.md)
+- [Combate](docs/core/03_COMBAT.md)
+- [Loot e economia](docs/core/04_LOOT_ECONOMY.md)
+- [Roadmap](docs/technical/04_ROADMAP.md)
+
+## Protótipo
+
+O código existente representa uma prova de conceito anterior à documentação
+modular. As próximas implementações devem usar os documentos de domínio como
+fonte de decisão.
+
+## Execução Atual
+
+Requer Python 3.12+ e CustomTkinter.
 
 ```powershell
-cd TBH2
 python -m pip install -r requirements.txt
-```
-
-## Execução
-
-```powershell
 python src/main.py
 ```
-
-O progresso é salvo automaticamente em `save.json` após eventos importantes e
-ao fechar a janela.
 
