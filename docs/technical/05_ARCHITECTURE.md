@@ -1069,7 +1069,9 @@ src/
 └── presentation/
     └── taskbar/
         ├── main_window.py
-        ├── presenter.py
+        ├── expanded_window.py
+        ├── journey_scene.py
+        ├── presentation.py
         ├── event_formatter.py
         └── components/
 ```

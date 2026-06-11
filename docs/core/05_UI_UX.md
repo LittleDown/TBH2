@@ -33,6 +33,7 @@ In Progress
 * [Identidade de Taskbar](../taskbar/01_TASKBAR_IDENTITY.md)
 * [Sistema de companion](../taskbar/04_COMPANION_SYSTEM.md)
 * [Direção artística e worldbuilding](../art/01_ART_DIRECTION_WORLDBUILDING.md)
+* [Sprint UX/UI 02](../SPRINT_UX_UI_02.md)
 
 ---
 
@@ -221,15 +222,31 @@ O excesso de partículas, brilho, textos ou ícones pode prejudicar a leitura.
 
 # Formato da Janela
 
-A interface deve funcionar adequadamente em:
+O TBH2 utiliza dois modos complementares.
+
+## Modo Compacto
+
+Referência principal:
 
 ```text
 360x600
 ```
 
-Essa dimensão deve ser tratada como referência principal.
+Mantém jornada, progresso, evento recente e resumo do herói sempre visíveis.
 
-A UI pode ser adaptável no futuro, mas a experiência base precisa funcionar nesse formato.
+## Modo Expandido
+
+Referência inicial:
+
+```text
+800x600
+```
+
+Concentra decisões de Herói, Mochila e Mapa. O painel expandido não pausa nem
+substitui a jornada compacta.
+
+A UI pode ser adaptável no futuro, mas ambos os modos precisam preservar sua
+hierarquia de informação.
 
 ---
 
@@ -841,12 +858,6 @@ Dados técnicos, widgets finais e implementação pertencem à arquitetura e ao 
 
 # Pendências
 
-* Produzir wireframes.
-* Definir layout definitivo da tela principal.
-* Definir layout do Hero Panel.
-* Definir layout do Inventário.
-* Definir layout do Map Panel.
-* Definir sistema de comparação de itens.
 * Definir apresentação visual das raridades.
 * Definir comportamento do feed de eventos.
 * Definir estados visuais mínimos.
@@ -855,11 +866,15 @@ Dados técnicos, widgets finais e implementação pertencem à arquitetura e ao 
 * Validar densidade visual durante combate.
 * Validar destaque de loot raro.
 * Validar navegação entre Hero, Inventory, Skills e Map.
+* Refinar os layouts implementados a partir de testes com jogadores.
+* Definir painel de Skills quando o sistema estiver disponível.
 
 ---
 
 # Histórico de Alterações
 
+* 2026-06-11: definidos e implementados os modos Compacto e Expandido.
+* 2026-06-11: adicionados painéis expandidos de Herói, Mochila e Mapa.
 * 2026-06-10: filosofia de Companion incorporada.
 * 2026-06-10: exploração definida como elemento principal da interface.
 * 2026-06-10: introduzidos Hero Panel, Inventário e Feed de Eventos.

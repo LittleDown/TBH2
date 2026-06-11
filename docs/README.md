@@ -23,6 +23,7 @@ In Progress
 * [Roadmap](technical/04_ROADMAP.md)
 * [Arquitetura técnica](technical/05_ARCHITECTURE.md)
 * [Consolidação do repositório](REPOSITORY_CONSOLIDATION.md)
+* [Sprint UX/UI 02](SPRINT_UX_UI_02.md)
 
 ---
 
@@ -96,6 +97,12 @@ Permanece apenas para histórico.
 ---
 
 # Estrutura da Documentação
+
+## Sprints Ativas
+
+* [Sprint UX/UI 02 - Interface Taskbar Expandida](SPRINT_UX_UI_02.md)
+
+---
 
 ## Core
 
