@@ -745,8 +745,14 @@ class MainWindow(ctk.CTk):
                     stipple="gray50",
                     tags=("ambient",),
                 )
-        self.scene.tag_raise("ambient", "parallax_middle")
-        self.scene.tag_lower("ambient", "actor")
+        if self.scene.find_withtag("ambient"):
+            if self.scene.find_withtag("parallax_middle"):
+                self.scene.tag_raise("ambient", "parallax_middle")
+            elif self.scene.find_withtag("environment"):
+                self.scene.tag_raise("ambient", "environment")
+
+            if self.scene.find_withtag("actor"):
+                self.scene.tag_lower("ambient", "actor")
 
     def _draw_fields(self) -> None:
         self.scene.create_oval(

@@ -2,32 +2,32 @@
   "version": 2,
   "hero": {
     "name": "Aventureiro",
-    "level": 20,
-    "xp": 974,
-    "max_hp": 480,
-    "current_hp": 465,
-    "base_attack": 67,
-    "base_defense": 43,
-    "gold": 5486,
+    "level": 34,
+    "xp": 1834,
+    "max_hp": 760,
+    "current_hp": 749,
+    "base_attack": 109,
+    "base_defense": 71,
+    "gold": 15688,
     "strategy": "Agressivo",
     "equipment": {
       "weapon": {
-        "item_id": "6722d812b147",
+        "item_id": "3abcc683a946",
         "name": "Machado do Caçador",
         "rarity": "Raro",
         "slot": "weapon",
-        "power": 24,
-        "attack_bonus": 24,
+        "power": 38,
+        "attack_bonus": 38,
         "defense_bonus": 0
       },
       "armor": {
-        "item_id": "8dade56194d8",
-        "name": "Armadura de Couro",
-        "rarity": "Raro",
+        "item_id": "03a01a497f94",
+        "name": "Armadura do Guardião",
+        "rarity": "Épico",
         "slot": "armor",
-        "power": 23,
+        "power": 37,
         "attack_bonus": 0,
-        "defense_bonus": 23
+        "defense_bonus": 37
       },
       "accessory": null
     },
@@ -420,7 +420,7 @@
         "power": 23,
         "attack_bonus": 0,
         "defense_bonus": 23,
-        "equipped": true
+        "equipped": false
       },
       {
         "item_id": "e3a09c988349",
@@ -450,21 +450,361 @@
         "power": 24,
         "attack_bonus": 24,
         "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "ed884b8e2d48",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 24,
+        "attack_bonus": 24,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "e3985f6ffe87",
+        "name": "Lâmina Carmesim",
+        "rarity": "Épico",
+        "slot": "weapon",
+        "power": 30,
+        "attack_bonus": 30,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "3464a4ea7592",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 22,
+        "attack_bonus": 0,
+        "defense_bonus": 22,
+        "equipped": false
+      },
+      {
+        "item_id": "29b5eca09286",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 26,
+        "attack_bonus": 0,
+        "defense_bonus": 26,
+        "equipped": false
+      },
+      {
+        "item_id": "9a1edbe17f1e",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 23,
+        "attack_bonus": 23,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "24a99f74a660",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 23,
+        "attack_bonus": 0,
+        "defense_bonus": 23,
+        "equipped": false
+      },
+      {
+        "item_id": "73e705b34da7",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 23,
+        "attack_bonus": 23,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "2a211d4f529f",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 24,
+        "attack_bonus": 0,
+        "defense_bonus": 24,
+        "equipped": false
+      },
+      {
+        "item_id": "2a3ce8e5616a",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 25,
+        "attack_bonus": 0,
+        "defense_bonus": 25,
+        "equipped": false
+      },
+      {
+        "item_id": "6473ce924a8e",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 25,
+        "attack_bonus": 0,
+        "defense_bonus": 25,
+        "equipped": false
+      },
+      {
+        "item_id": "0a1b99bac157",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 25,
+        "attack_bonus": 0,
+        "defense_bonus": 25,
+        "equipped": false
+      },
+      {
+        "item_id": "092c6b76b41d",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 29,
+        "attack_bonus": 29,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "f41107588a5b",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 29,
+        "attack_bonus": 29,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "09a52f79d027",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 29,
+        "attack_bonus": 0,
+        "defense_bonus": 29,
+        "equipped": false
+      },
+      {
+        "item_id": "ba69076d1bed",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 30,
+        "attack_bonus": 30,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "2643ab1b6a15",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 30,
+        "attack_bonus": 0,
+        "defense_bonus": 30,
+        "equipped": false
+      },
+      {
+        "item_id": "12eb529ad3e0",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 28,
+        "attack_bonus": 0,
+        "defense_bonus": 28,
+        "equipped": false
+      },
+      {
+        "item_id": "da70e100ea66",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 28,
+        "attack_bonus": 28,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "03a01a497f94",
+        "name": "Armadura do Guardião",
+        "rarity": "Épico",
+        "slot": "armor",
+        "power": 37,
+        "attack_bonus": 0,
+        "defense_bonus": 37,
         "equipped": true
+      },
+      {
+        "item_id": "3fa4819f33c0",
+        "name": "Armadura do Guardião",
+        "rarity": "Épico",
+        "slot": "armor",
+        "power": 37,
+        "attack_bonus": 0,
+        "defense_bonus": 37,
+        "equipped": false
+      },
+      {
+        "item_id": "52c167748aa8",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 29,
+        "attack_bonus": 0,
+        "defense_bonus": 29,
+        "equipped": false
+      },
+      {
+        "item_id": "47f2ade370f2",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 29,
+        "attack_bonus": 29,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "496a5de7ce94",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 31,
+        "attack_bonus": 31,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "41fbe24e1eed",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 31,
+        "attack_bonus": 0,
+        "defense_bonus": 31,
+        "equipped": false
+      },
+      {
+        "item_id": "713f369b83d0",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 34,
+        "attack_bonus": 34,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "d46df7df173f",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 34,
+        "attack_bonus": 0,
+        "defense_bonus": 34,
+        "equipped": false
+      },
+      {
+        "item_id": "98ff51fc18d9",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 32,
+        "attack_bonus": 32,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "fb3084fbd795",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 32,
+        "attack_bonus": 0,
+        "defense_bonus": 32,
+        "equipped": false
+      },
+      {
+        "item_id": "1ea7d4bf2ccf",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 37,
+        "attack_bonus": 0,
+        "defense_bonus": 37,
+        "equipped": false
+      },
+      {
+        "item_id": "c386a4938ae8",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 34,
+        "attack_bonus": 34,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "d9e38a24d4e2",
+        "name": "Armadura de Couro",
+        "rarity": "Raro",
+        "slot": "armor",
+        "power": 37,
+        "attack_bonus": 0,
+        "defense_bonus": 37,
+        "equipped": false
+      },
+      {
+        "item_id": "3abcc683a946",
+        "name": "Machado do Caçador",
+        "rarity": "Raro",
+        "slot": "weapon",
+        "power": 38,
+        "attack_bonus": 38,
+        "defense_bonus": 0,
+        "equipped": true
+      },
+      {
+        "item_id": "74ba2e0a02c5",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 35,
+        "attack_bonus": 0,
+        "defense_bonus": 35,
+        "equipped": false
+      },
+      {
+        "item_id": "0f7810752b21",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 35,
+        "attack_bonus": 0,
+        "defense_bonus": 35,
+        "equipped": false
       }
     ],
     "statistics": {
-      "enemies_defeated": 143,
+      "enemies_defeated": 276,
       "deaths": 0,
-      "bosses_defeated": 0
+      "bosses_defeated": 1
     }
   },
   "campaign": {
     "act": "Fronteira Esquecida",
-    "map_index": 7,
-    "map_name": "Trilha da Névoa",
-    "victories": 3,
+    "map_index": 9,
+    "map_name": "Fortaleza Esquecida",
+    "victories": 10,
     "target": 10,
-    "act_completed": false
+    "act_completed": true
   }
 }
