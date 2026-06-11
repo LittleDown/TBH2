@@ -87,9 +87,9 @@ Cada acao e convertida em um ou mais frames de renderizacao.
 
 ### Assets do Arqueiro
 
-`assets/archer` possui o contrato completo de nomes. Nesta sprint, os PNGs sao
-placeholders copiados dos equivalentes do Guerreiro e identificados no README
-da pasta.
+`assets/archer` recebeu inicialmente o contrato completo com placeholders.
+Os placeholders foram substituidos por sprites proprios na
+[Sprint Arqueiro MVP](SPRINT_VISUAL_GAMEPLAY_ARCHER_MVP.md).
 
 ## Regras
 
@@ -135,15 +135,19 @@ Cobertura automatizada:
 
 ## Pendencias
 
-Proxima sprint Arqueiro MVP:
+Concluido pela [Sprint Arqueiro MVP](SPRINT_VISUAL_GAMEPLAY_ARCHER_MVP.md):
 
-* produzir sprites definitivos;
+* sprites proprios do Arqueiro;
+* ataque automatico a distancia;
+* projétil visual;
+* configuracao tecnica de `class_id`.
+
+Pendencias seguintes:
+
 * definir atributos e crescimento;
-* implementar ataque a distancia sem interacao manual;
-* adicionar projetil somente se necessario para leitura visual;
-* definir armas permitidas;
+* criar tipo de arma `bow`;
 * validar loot e Build Score por classe;
-* decidir quando a escolha de classe entra no fluxo do jogador.
+* integrar escolha de classe ao fluxo inicial.
 
 Permanecem fora de escopo:
 
@@ -159,3 +163,5 @@ Permanecem fora de escopo:
 
 * 2026-06-11: sprint implementada com `class_id`, save v4, visual mapping,
   fallback seguro e placeholders do Arqueiro.
+* 2026-06-11: placeholders substituidos e ataque ranged concluido pela sprint
+  Arqueiro MVP.

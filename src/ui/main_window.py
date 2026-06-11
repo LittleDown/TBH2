@@ -81,6 +81,7 @@ class MainWindow(ctk.CTk):
         self.display_enemy_key = "goblin"
         self.display_enemy_hp = 1
         self.display_enemy_max_hp = 1
+        self.pending_display_enemy_hp: int | None = None
         self._capture_display_enemy()
 
         ctk.set_appearance_mode("dark")
@@ -996,6 +997,10 @@ class MainWindow(ctk.CTk):
                     f"Combate iniciado contra {self.display_enemy_name}."
                 )
                 self.after(200, self._combat_tick)
+            elif event == "projectile_hit":
+                if self.pending_display_enemy_hp is not None:
+                    self.display_enemy_hp = self.pending_display_enemy_hp
+                    self.pending_display_enemy_hp = None
             elif event == "explore":
                 self._append_log(f"{self.hero.name} retomou a caminhada.")
             self._refresh()
@@ -1007,6 +1012,7 @@ class MainWindow(ctk.CTk):
         if self.journey.phase != "fight":
             return
         enemy_before_tick = self.combat.enemy
+        enemy_hp_before_tick = enemy_before_tick.current_hp
         events = self.combat.tick()
         self._capture_display_enemy(enemy_before_tick)
 
@@ -1032,6 +1038,12 @@ class MainWindow(ctk.CTk):
                 attack_event.kind,
                 attack_event.amount or 0,
             )
+            if (
+                attack_event.kind == "hero_attack"
+                and self.journey.hero_attack_action == "attack_ranged"
+            ):
+                self.pending_display_enemy_hp = self.display_enemy_hp
+                self.display_enemy_hp = enemy_hp_before_tick
         self.save_coordinator.handle_events(events)
 
         if victory_event is not None:
@@ -1063,6 +1075,7 @@ class MainWindow(ctk.CTk):
 
     def _capture_display_enemy(self, enemy: object | None = None) -> None:
         enemy = enemy or self.combat.enemy
+        self.pending_display_enemy_hp = None
         self.display_enemy_name = enemy.name
         self.display_enemy_level = enemy.level
         self.display_enemy_is_boss = enemy.is_boss
@@ -1260,6 +1273,28 @@ class MainWindow(ctk.CTk):
         )
 
         self.scene.delete("fx")
+        for projectile in self.journey.projectiles:
+            tail_x = projectile.x - 23.0
+            self.scene.create_line(
+                tail_x,
+                projectile.y,
+                projectile.x,
+                projectile.y,
+                fill="#7b3f19",
+                width=7,
+                tags=("fx", "projectile"),
+            )
+            self.scene.create_line(
+                tail_x,
+                projectile.y,
+                projectile.x,
+                projectile.y,
+                fill="#ffe7a3",
+                width=3,
+                arrow=tk.LAST,
+                arrowshape=(9, 10, 4),
+                tags=("fx", "projectile"),
+            )
         for floater in self.journey.floaters:
             self.scene.create_text(
                 floater.x,

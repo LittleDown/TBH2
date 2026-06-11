@@ -5,11 +5,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from PIL import Image
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from game_state import SAVE_VERSION, GameState
 from hero.hero import Hero
+from main import parse_args
 from ui.class_visuals import (
     RENDER_FRAME_NAMES,
     frame_names_for_action,
@@ -143,6 +146,26 @@ class ClassVisualMappingTests(unittest.TestCase):
                             frame_name,
                         )
                     )
+
+    def test_archer_assets_are_distinct_transparent_sprites(self) -> None:
+        asset_root = PROJECT_ROOT / "src" / "assets"
+        archer_idle = asset_root / "archer" / "idle.png"
+        warrior_idle = asset_root / "warrior" / "idle.png"
+
+        self.assertNotEqual(
+            archer_idle.read_bytes(),
+            warrior_idle.read_bytes(),
+        )
+        with Image.open(archer_idle) as image:
+            self.assertEqual(image.mode, "RGBA")
+            self.assertEqual(image.getpixel((0, 0))[3], 0)
+
+
+class ClassConfigurationTests(unittest.TestCase):
+    def test_cli_accepts_supported_class_id(self) -> None:
+        args = parse_args(["--class-id", "archer"])
+
+        self.assertEqual(args.class_id, "archer")
 
 
 class ArchitectureRegressionTests(unittest.TestCase):

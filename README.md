@@ -21,6 +21,8 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - jornada visual contínua com loop baseado em delta time;
 - fluxo Exploração → Encontro → Combate → Recompensa;
 - animações de caminhada, ataque, impacto, dano flutuante, vitória e morte;
+- Guerreiro corpo a corpo e Arqueiro MVP com ataque automático à distância;
+- projétil visual de flecha desacoplado do cálculo de dano;
 - entrada do inimigo pela direita e cenário com movimento contínuo;
 - parallax em três camadas na Estrada Abandonada;
 - desaceleração antes do combate e retomada gradual da jornada;
@@ -32,7 +34,7 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - dez mapas oficiais do Ato I, com progressão por vitórias e portal de chefe;
 - Senhor dos Ossos como chefe oficial e conclusão do Ato I;
 - abas Hero, Inventory e Map;
-- save JSON v3, migração de formatos antigos e recuperação por backup.
+- save JSON v4, migração de formatos antigos e recuperação por backup.
 
 ## Documentação
 
@@ -74,6 +76,13 @@ python -m venv .venv
 O progresso é salvo automaticamente em `save.json` a cada evento importante,
 a cada dez segundos e ao fechar a janela.
 
+Durante o desenvolvimento, a classe atual pode ser configurada e persistida:
+
+```powershell
+.\.venv\Scripts\python.exe src\main.py --class-id archer
+.\.venv\Scripts\python.exe src\main.py --class-id warrior
+```
+
 ## Controles
 
 - `Hero`: atributos, poder da build e equipamentos.
@@ -99,7 +108,7 @@ correta para esta implementação é o projeto Python deste repositório.
 
 ## Limitações da demo
 
-- os sprites animados do herói ainda são temporários e vieram da referência JS;
-- não há áudio, loja, habilidades, classes, talentos ou progresso offline;
+- os sprites do Guerreiro ainda usam a referência JS; o Arqueiro possui arte MVP própria;
+- não há áudio, loja, sistema completo de classes, habilidades, talentos ou progresso offline;
 - após concluir o Ato I, o combate continua em modo livre no último mapa;
 - o balanceamento é inicial e serve apenas para validar o loop.

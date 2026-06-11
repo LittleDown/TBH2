@@ -1,12 +1,11 @@
-# Assets temporarios do arqueiro
+# Assets do Arqueiro MVP
 
-Esta pasta prepara o contrato visual da classe `archer`.
+Esta pasta implementa o contrato visual da classe `archer`.
 
-Os PNGs atuais sao placeholders copiados dos frames equivalentes do guerreiro.
-Eles existem para validar carregamento, fallback, animacao e persistencia de
-`class_id` antes da producao da arte definitiva.
+Os sprites foram gerados como uma folha consistente, tiveram o fundo cromatico
+removido e foram recortados em frames transparentes de 512x512.
 
-Arquivos esperados:
+Arquivos usados em runtime:
 
 - `idle.png`
 - `walk1.png`
@@ -19,5 +18,20 @@ Arquivos esperados:
 - `defeat.png`
 - `front.png`
 
-O Arqueiro MVP futuro deve substituir estes arquivos por arte propria sem
-alterar o contrato de nomes.
+`source_sprite_sheet_alpha.png` preserva a folha de origem transparente para
+ajustes futuros e nao e carregada pelo jogo.
+
+## Prompt de geracao
+
+```text
+Create a 5-column by 2-row game sprite sheet of the same fantasy human archer
+on a flat chroma-key background. Include idle, two walking poses, combat aim,
+bow draw, bow release, hit, victory, defeat and front-facing stance. Agile
+young archer with short brown hair, green leather armor, brown boots, dark red
+cape, wooden recurve bow and quiver. Polished hand-painted 2D fantasy game
+sprite, crisp silhouette, consistent scale and baseline, readable at 84px.
+```
+
+Geracao realizada com a ferramenta integrada de imagens do Codex em
+2026-06-11. O projétil exibido durante o jogo e desenhado pela UI e nao faz
+parte do calculo de dano.

@@ -102,6 +102,7 @@ Permanece apenas para histórico.
 
 * [Sprint UX/UI 02 - Interface Taskbar Expandida](SPRINT_UX_UI_02.md)
 * [Sprint Tecnica - Class ID e Visual Mapping](SPRINT_TECH_CLASS_ID_VISUAL_MAPPING.md)
+* [Sprint Visual-Gameplay - Arqueiro MVP](SPRINT_VISUAL_GAMEPLAY_ARCHER_MVP.md)
 
 ---
 

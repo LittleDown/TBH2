@@ -7,7 +7,7 @@ habilidades e combate.
 
 ## Status
 
-Planned - Fase 2
+In Progress - Arqueiro MVP
 
 ## Dependências
 
@@ -42,8 +42,26 @@ Fantasia: eliminar ameaças com rapidez.
 - maior pressão ofensiva;
 - menor margem defensiva.
 
-Tank, Healer e DPS são papéis mecânicos iniciais. Nomes de fantasia como
-Guerreiro, Sacerdote ou Arqueiro são conteúdo posterior e não estão aprovados.
+Tank, Healer e DPS continuam como papéis mecânicos. Os identificadores
+`warrior` e `archer` estão aprovados para validação inicial de identidade
+visual e comportamento.
+
+## Classes em Validação
+
+### Guerreiro
+
+* `class_id = "warrior"`;
+* ataque visual corpo a corpo;
+* pequena avançada durante o golpe;
+* fallback padrão para saves e assets.
+
+### Arqueiro
+
+* `class_id = "archer"`;
+* ataque visual à distância;
+* permanece afastado do inimigo;
+* utiliza flecha visual sem cálculo de dano;
+* priorização de DEX permanece futura.
 
 ## Estrutura de Classe
 
@@ -76,3 +94,4 @@ Cada classe deve possuir:
 - 2026-06-10: arquétipos alinhados ao briefing de expansão.
 - 2026-06-10: criado o template modular.
 - 2026-06-11: removida a referência ativa às estratégias legadas.
+- 2026-06-11: Guerreiro e Arqueiro aprovados como identificadores iniciais; Arqueiro MVP integrado visualmente.
