@@ -16,6 +16,17 @@ class FloatingText:
     velocity_y: float = -24.0
 
 
+@dataclass
+class AmbientParticle:
+    kind: str
+    x: float
+    y: float
+    velocity_x: float
+    velocity_y: float
+    life: float
+    max_life: float
+
+
 class JourneySceneController:
     EXPLORE_SPEED = 60.0
     ENEMY_APPROACH_SPEED = 105.0
@@ -57,6 +68,10 @@ class JourneySceneController:
         self.hit_target: str | None = None
         self.hit_time = 0.0
         self.floaters: list[FloatingText] = []
+        self.ambient_enabled = True
+        self.ambient_time = 0.0
+        self.next_ambient_event = self.rng.uniform(4.0, 7.0)
+        self.ambient_particles: list[AmbientParticle] = []
         self.start_explore(resuming=False)
 
     @property
@@ -169,6 +184,7 @@ class JourneySceneController:
         events: list[str] = []
         self.phase_time += dt
         self._update_transients(dt)
+        self._update_ambient(dt)
 
         if self.phase == "explore":
             if self.world_speed_factor < 1.0:
@@ -257,3 +273,78 @@ class JourneySceneController:
             floater.life -= dt
             floater.y += floater.velocity_y * dt
         self.floaters = [floater for floater in self.floaters if floater.life > 0]
+
+    def _update_ambient(self, dt: float) -> None:
+        if (
+            self.ambient_enabled
+            and self.phase == "explore"
+            and self.world_speed_factor > 0.45
+        ):
+            self.ambient_time += dt
+            if self.ambient_time >= self.next_ambient_event:
+                self.ambient_time = 0.0
+                self.next_ambient_event = self.rng.uniform(4.0, 7.0)
+                self._spawn_ambient_event()
+
+        for particle in self.ambient_particles:
+            particle.life -= dt
+            particle.x += particle.velocity_x * dt
+            particle.y += particle.velocity_y * dt
+        self.ambient_particles = [
+            particle
+            for particle in self.ambient_particles
+            if particle.life > 0
+            and -30 < particle.x < self.scene_width + 40
+            and -20 < particle.y < 180
+        ]
+
+    def _spawn_ambient_event(self) -> None:
+        event = self.rng.choice(("crow", "leaves", "dust"))
+        if event == "crow":
+            count = self.rng.randint(2, 3)
+            for index in range(count):
+                life = 4.2
+                self.ambient_particles.append(
+                    AmbientParticle(
+                        kind="crow",
+                        x=self.scene_width + 18.0 + index * 20,
+                        y=self.rng.uniform(32.0, 56.0) + index * 4,
+                        velocity_x=self.rng.uniform(-78.0, -64.0),
+                        velocity_y=self.rng.uniform(-2.0, 2.0),
+                        life=life,
+                        max_life=life,
+                    )
+                )
+            return
+
+        if event == "leaves":
+            count = self.rng.randint(4, 7)
+            for index in range(count):
+                life = 3.4
+                self.ambient_particles.append(
+                    AmbientParticle(
+                        kind="leaf",
+                        x=self.scene_width + index * 12.0,
+                        y=self.rng.uniform(65.0, 115.0),
+                        velocity_x=self.rng.uniform(-58.0, -42.0),
+                        velocity_y=self.rng.uniform(4.0, 10.0),
+                        life=life,
+                        max_life=life,
+                    )
+                )
+            return
+
+        count = self.rng.randint(4, 6)
+        for index in range(count):
+            life = 2.2
+            self.ambient_particles.append(
+                AmbientParticle(
+                    kind="dust",
+                    x=self.scene_width + index * 8.0,
+                    y=self.rng.uniform(132.0, 148.0),
+                    velocity_x=self.rng.uniform(-48.0, -32.0),
+                    velocity_y=self.rng.uniform(-5.0, -1.0),
+                    life=life,
+                    max_life=life,
+                )
+            )

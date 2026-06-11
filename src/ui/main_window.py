@@ -159,6 +159,36 @@ class MainWindow(ctk.CTk):
                 ((88 - frame.width) // 2, 88 - frame.height),
             )
             self.scene_hero_frames[frame_name] = ImageTk.PhotoImage(canvas)
+
+        world_dir = (
+            Path(__file__).resolve().parents[1]
+            / "assets"
+            / "world"
+            / "abandoned_road"
+        )
+        self.world_sprites: dict[str, ImageTk.PhotoImage] = {}
+        world_sizes = {
+            "tree_01": (46, 60),
+            "tree_02": (50, 64),
+            "tree_03": (42, 64),
+            "rock_01": (31, 25),
+            "rock_02": (28, 22),
+            "sign_01": (31, 40),
+            "grass_01": (23, 24),
+            "campfire_01": (34, 19),
+            "sword_01": (25, 42),
+            "cart_01": (49, 36),
+            "banner_01": (29, 41),
+            "tracks_01": (44, 29),
+        }
+        for name, maximum_size in world_sizes.items():
+            path = world_dir / f"{name}.png"
+            if not path.exists():
+                continue
+            with Image.open(path) as source:
+                image = source.convert("RGBA").copy()
+            image.thumbnail(maximum_size, Image.Resampling.LANCZOS)
+            self.world_sprites[name] = ImageTk.PhotoImage(image)
         return sprites
 
     def _build_ui(self) -> None:
@@ -219,10 +249,19 @@ class MainWindow(ctk.CTk):
             )
             x += rng.randint(32, 54)
 
+        story = [
+            {"kind": "tracks_01", "x": 290.0, "y": 149.0, "scale": 1.0},
+            {"kind": "sword_01", "x": 650.0, "y": 145.0, "scale": 1.0},
+            {"kind": "campfire_01", "x": 1010.0, "y": 143.0, "scale": 1.0},
+            {"kind": "cart_01", "x": 1390.0, "y": 142.0, "scale": 1.0},
+            {"kind": "banner_01", "x": 1810.0, "y": 142.0, "scale": 1.0},
+        ]
+
         return {
             "far": far,
             "middle": middle,
             "foreground": foreground,
+            "story": story,
         }
 
     def _build_header(self) -> None:
@@ -477,6 +516,7 @@ class MainWindow(ctk.CTk):
             ("far", 0.20, 760.0, "parallax_far"),
             ("middle", 0.50, 640.0, "parallax_middle"),
             ("foreground", 1.00, 520.0, "parallax_foreground"),
+            ("story", 1.00, 2200.0, "parallax_story"),
         )
         for layer_name, speed, cycle, tag in layers:
             for element in self.road_parallax[layer_name]:
@@ -495,7 +535,8 @@ class MainWindow(ctk.CTk):
         self.scene.tag_raise("parallax_far", "environment")
         self.scene.tag_raise("parallax_middle", "parallax_far")
         self.scene.tag_raise("parallax_foreground", "parallax_middle")
-        self.scene.tag_lower("parallax_foreground", "actor")
+        self.scene.tag_raise("parallax_story", "parallax_foreground")
+        self.scene.tag_lower("parallax_story", "actor")
 
     def _draw_road_element(
         self,
@@ -506,6 +547,17 @@ class MainWindow(ctk.CTk):
         tag: str,
     ) -> None:
         tags = ("motion", tag)
+        sprite = self.world_sprites.get(kind)
+        if sprite is not None:
+            self.scene.create_image(
+                x,
+                y,
+                image=sprite,
+                anchor="s",
+                tags=tags,
+            )
+            return
+
         if kind.startswith("mountain"):
             width = (88 if kind == "mountain_01" else 112) * scale
             height = (27 if kind == "mountain_01" else 34) * scale
@@ -652,6 +704,49 @@ class MainWindow(ctk.CTk):
             width=2,
             tags=tags,
         )
+
+    def _draw_ambient_events(self) -> None:
+        self.scene.delete("ambient")
+        for particle in self.journey.ambient_particles:
+            x, y = particle.x, particle.y
+            if particle.kind == "crow":
+                wing_up = int((particle.max_life - particle.life) * 9) % 2 == 0
+                wing_y = y - 3 if wing_up else y + 2
+                self.scene.create_line(
+                    x - 5,
+                    wing_y,
+                    x,
+                    y,
+                    x + 5,
+                    wing_y,
+                    fill="#1d2020",
+                    width=2,
+                    smooth=True,
+                    tags=("ambient",),
+                )
+            elif particle.kind == "leaf":
+                self.scene.create_oval(
+                    x - 2,
+                    y - 1,
+                    x + 2,
+                    y + 1,
+                    fill="#8b7438",
+                    outline="#5d5d2f",
+                    tags=("ambient",),
+                )
+            else:
+                self.scene.create_oval(
+                    x - 4,
+                    y - 2,
+                    x + 4,
+                    y + 2,
+                    fill="#c6aa79",
+                    outline="",
+                    stipple="gray50",
+                    tags=("ambient",),
+                )
+        self.scene.tag_raise("ambient", "parallax_middle")
+        self.scene.tag_lower("ambient", "actor")
 
     def _draw_fields(self) -> None:
         self.scene.create_oval(
@@ -968,6 +1063,9 @@ class MainWindow(ctk.CTk):
         now = perf_counter()
         delta_time = now - self.last_frame_time
         self.last_frame_time = now
+        self.journey.ambient_enabled = (
+            self.game_state.campaign.map_index == 0
+        )
 
         for event in self.journey.update(delta_time):
             if event == "encounter":
@@ -1158,6 +1256,7 @@ class MainWindow(ctk.CTk):
     def _refresh_scene(self) -> None:
         self._draw_environment()
         self._draw_motion_layer()
+        self._draw_ambient_events()
 
         hero_frame = self.journey.hero_frame
         if self.journey.phase == "reward":

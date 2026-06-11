@@ -58,6 +58,10 @@ verdade após esta migração.
 - [Dificuldades](maps/05_DIFFICULTIES.md)
 - [Dungeons](maps/06_DUNGEONS.md)
 
+### Arte
+
+- [Direção artística e worldbuilding](art/01_ART_DIRECTION_WORLDBUILDING.md)
+
 ### Itens
 
 - [Sistema de itens](items/01_ITEM_SYSTEM.md)
@@ -108,5 +112,6 @@ verdade após esta migração.
 
 ## Histórico de Alterações
 
+- 2026-06-10: adicionada direção artística e worldbuilding.
 - 2026-06-10: adicionados raças, companheiros de grupo e dungeons ao índice.
 - 2026-06-10: criada a arquitetura modular inicial.

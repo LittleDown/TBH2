@@ -66,6 +66,22 @@ class JourneySceneTests(unittest.TestCase):
             scene.update(0.05)
         self.assertEqual(scene.hero_x, scene.hero_home_x)
 
+    def test_ambient_event_spawns_only_during_active_exploration(self) -> None:
+        scene = JourneySceneController(rng=Random(4))
+        scene.next_ambient_event = 0
+        scene.update(0.05)
+
+        self.assertGreater(len(scene.ambient_particles), 0)
+        first_x = scene.ambient_particles[0].x
+        scene.update(0.05)
+        self.assertLess(scene.ambient_particles[0].x, first_x)
+
+        scene.phase = "fight"
+        scene.ambient_particles.clear()
+        scene.next_ambient_event = 0
+        scene.update(0.05)
+        self.assertEqual(scene.ambient_particles, [])
+
     def test_reward_death_returns_to_explore(self) -> None:
         scene = JourneySceneController(rng=Random(1))
         scene.phase = "fight"

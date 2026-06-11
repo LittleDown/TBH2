@@ -39,6 +39,9 @@ herói, inimigos, combate, itens, save e uma interface CustomTkinter.
 - parallax de 20%, 50% e 100% na Estrada Abandonada;
 - elementos procedurais leves reciclados ao sair da tela;
 - desaceleração gradual no encontro e aceleração após a recompensa;
+- kit modular em pixel art para árvores, pedras, vegetação e vestígios;
+- suspense ambiental com rastros, fogueira, espada, carroça e bandeira;
+- eventos ocasionais de corvos, folhas e poeira;
 - ambientes distintos para os dez mapas do Ato I;
 - testes automatizados para combate, campanha, estratégias e persistência.
 
@@ -56,7 +59,7 @@ campanha, XP, ouro, loot, mapas e save originais.
 ## Limitações conhecidas
 
 - os frames animados do herói ainda são assets temporários da referência;
-- os ambientes usam formas simples e paletas temporárias;
+- somente a Estrada Abandonada possui kit modular de produção inicial;
 - não existem áudio, interpolação avançada, partículas complexas ou blend real
   de opacidade no Canvas do Tkinter;
 - o conteúdo está definido em módulos Python, ainda não em arquivos declarativos;
