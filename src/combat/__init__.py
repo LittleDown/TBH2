@@ -1,4 +1,3 @@
-from combat.combat import CombatEngine, CombatEvent
+from combat.combat import CombatEvent, CombatSystem
 
-__all__ = ["CombatEngine", "CombatEvent"]
-
+__all__ = ["CombatEvent", "CombatSystem"]

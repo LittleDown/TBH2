@@ -1,4 +1,3 @@
-from items.items import Item, roll_loot
+from items.items import Item, ItemBaseDefinition, ItemInstance, roll_loot
 
-__all__ = ["Item", "roll_loot"]
-
+__all__ = ["Item", "ItemBaseDefinition", "ItemInstance", "roll_loot"]

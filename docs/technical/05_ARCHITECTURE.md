@@ -50,27 +50,26 @@ Não deve virar complexidade por si mesma.
 
 # Estado Atual
 
-O protótipo atual possui uma separação inicial por pastas:
+O protótipo consolidado possui separação leve por responsabilidades:
 
 * `hero`: estado e progressão do herói;
 * `enemies`: definição e geração de inimigos;
 * `items`: catálogo e sorteio de loot;
-* `combat`: loop de combate, vitória, derrota, experiência e loot;
-* `save`: leitura e escrita do save;
-* `ui`: janela, loop visual, eventos e autosave.
+* `combat`: resolução de turnos, dano, vitória e derrota;
+* `application`: sessão, encontros, recompensas, loot, progressão e coordenação de save;
+* `save`: persistência atômica, migração e recuperação por backup;
+* `ui`: janela, loop visual e apresentação de eventos.
 
-Essa estrutura foi suficiente para validar a demo técnica.
+O combate não concede XP, ouro, loot nem progresso de mapa. Encontros usam ato,
+mapa, dificuldade, categoria e pool regional. O save persiste `GameState` v3 e
+ignora campos legados de estratégia.
 
-Porém apresenta limitações para expansão:
+Limitações restantes:
 
-* `CombatEngine` concentra responsabilidades demais;
-* a UI participa de decisões de loop e persistência;
-* inimigos ainda não dependem claramente de mapa, ato e dificuldade;
-* itens precisam separar definição base de instância gerada;
-* save precisa persistir `GameState`, não apenas partes isoladas;
-* regras de recompensa, loot e progressão precisam sair do combate;
-* conteúdo e regra ainda estão muito próximos;
-* estratégia de combate deve ser removida como sistema ativo.
+* parte do conteúdo ainda está declarada em módulos Python;
+* `Hero` ainda agrega inventário, equipamento, carteira e estatísticas;
+* a UI ainda controla a temporização visual da sessão;
+* atributos avançados, classes, raças e habilidades continuam fora do escopo.
 
 ---
 
@@ -539,7 +538,7 @@ Responsabilidades:
 * expor view state;
 * sinalizar necessidade de save.
 
-Substitui o papel central hoje dividido entre UI e CombatEngine.
+Substitui o papel central antes dividido entre UI e `CombatEngine`.
 
 ---
 
@@ -1081,39 +1080,29 @@ Não criar arquivos vazios apenas para cumprir a árvore.
 
 ---
 
-# Mapeamento da Implementação Atual
+# Mapeamento da Migração Incremental
 
-| Atual            | Destino Futuro              | Observação                           |
-| ---------------- | --------------------------- | ------------------------------------ |
-| `hero.Hero`      | `domain.hero.Hero`          | Remover serialização direta          |
-| `enemies.Enemy`  | `MonsterInstance`           | Separar definição e instância        |
-| `generate_enemy` | `EncounterSystem`           | Usar mapa, ato e dificuldade         |
-| `items.Item`     | `ItemBase` + `ItemInstance` | Separar base e item gerado           |
-| `LOOT_TABLE`     | `ContentRepository`         | Catálogo fora da regra               |
-| `roll_loot`      | `LootSystem`                | Receber contexto                     |
-| `CombatEngine`   | `CombatSystem` + sistemas   | Separar combate, reward e progressão |
-| `SaveManager`    | `JsonGameStateRepository`   | Persistir GameState versionado       |
-| `MainWindow`     | Presentation + Presenter    | UI não decide regra                  |
-| `main.py`        | `bootstrap.py` + `main.py`  | Compor dependências                  |
+| Legado           | Implementação atual                    | Status    |
+| ---------------- | -------------------------------------- | --------- |
+| `generate_enemy` | `EncounterSystem` com contexto de mundo | Concluído |
+| `items.Item`     | `ItemBaseDefinition` + `ItemInstance`  | Concluído |
+| `roll_loot`      | `LootSystem` contextual                | Concluído |
+| `CombatEngine`   | `CombatSystem` + serviços de aplicação | Concluído |
+| save parcial     | `GameState` v3 + `SaveManager`          | Concluído |
+| save na UI       | `SaveCoordinator`                      | Concluído |
+| conteúdo Python  | `ContentRepository` declarativo        | Pendente  |
+| `Hero` agregado  | serviços dedicados de inventário/wallet | Parcial   |
 
 ---
 
-# Ordem Recomendada de Migração
+# Próximas Etapas de Migração
 
-1. Introduzir `GameState`.
-2. Introduzir `WorldProgress`.
-3. Centralizar save em repositório versionado.
-4. Separar `MonsterDefinition` de `MonsterInstance`.
-5. Extrair recompensa do `CombatEngine`.
-6. Extrair progressão do `CombatEngine`.
-7. Criar `EncounterSystem`.
-8. Criar `Wallet`.
-9. Separar `ItemBase` de `ItemInstance`.
-10. Criar `LootSystem`.
-11. Criar `EquipmentSystem`.
-12. Introduzir atributos STR, DEX, INT e CON.
-13. Introduzir `class_id` e `race_id` com defaults.
-14. Adaptar UI para consumir eventos e View State.
+1. Criar `Wallet` sem quebrar o save v3.
+2. Criar `EquipmentSystem`.
+3. Extrair o conteúdo para um repositório declarativo validado.
+4. Introduzir atributos STR, DEX, INT e CON.
+5. Introduzir `class_id` e `race_id` com defaults.
+6. Adaptar a UI para consumir um View State dedicado.
 
 Cada etapa deve manter o jogo executável.
 
@@ -1267,14 +1256,8 @@ A arquitetura será considerada saudável quando:
 
 # Pendências
 
-* Definir esquema inicial final de `GameState`.
 * Definir formato oficial do `ContentRepository`.
-* Definir migração do save atual.
 * Definir se encontro atual será persistido ou recriado.
-* Definir sequência final dos sistemas após vitória.
-* Definir contratos técnicos de eventos.
-* Criar testes de round-trip do save.
-* Remover referências ativas a estratégia de combate.
 * Preparar defaults de `class_id`, `race_id` e atributos.
 
 ---
@@ -1286,3 +1269,4 @@ A arquitetura será considerada saudável quando:
 * 2026-06-10: `GameState` definido como agregado persistente principal.
 * 2026-06-10: removida estratégia de combate como sistema ativo.
 * 2026-06-10: adicionada direção de migração incremental.
+* 2026-06-11: combate, recompensa, loot, progressão, encontro e save foram separados incrementalmente.

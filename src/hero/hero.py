@@ -3,13 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from balance import hero_level_growth, xp_required_for_level
 from items.items import Item
-
-STRATEGY_MODIFIERS: dict[str, tuple[float, float]] = {
-    "Agressivo": (1.20, 0.80),
-    "Balanceado": (1.00, 1.00),
-    "Defensivo": (0.80, 1.20),
-}
 
 
 @dataclass
@@ -30,7 +25,6 @@ class Hero:
     )
     inventory: list[Item] = field(default_factory=list)
     gold: int = 0
-    strategy: str = "Balanceado"
     enemies_defeated: int = 0
     deaths: int = 0
     bosses_defeated: int = 0
@@ -38,20 +32,36 @@ class Hero:
     @property
     def attack(self) -> int:
         weapon = self.equipment.get("weapon")
-        base_value = self.base_attack + (weapon.attack_bonus if weapon else 0)
-        attack_modifier, _ = STRATEGY_MODIFIERS[self.strategy]
-        return max(1, int(base_value * attack_modifier))
+        return max(
+            1,
+            self.base_attack + (weapon.attack_bonus if weapon else 0),
+        )
 
     @property
     def defense(self) -> int:
         armor = self.equipment.get("armor")
-        base_value = self.base_defense + (armor.defense_bonus if armor else 0)
-        _, defense_modifier = STRATEGY_MODIFIERS[self.strategy]
-        return max(0, int(base_value * defense_modifier))
+        return max(
+            0,
+            self.base_defense + (armor.defense_bonus if armor else 0),
+        )
+
+    @property
+    def equipment_power(self) -> int:
+        return sum(
+            item.power for item in self.equipment.values() if item is not None
+        )
+
+    @property
+    def power(self) -> int:
+        return self.base_attack + self.base_defense + self.equipment_power
+
+    @property
+    def build_score(self) -> int:
+        return self.power
 
     @property
     def xp_needed(self) -> int:
-        return self.level * 100
+        return xp_required_for_level(self.level)
 
     def receive_damage(self, raw_damage: int) -> int:
         damage = max(1, raw_damage - self.defense)
@@ -59,14 +69,15 @@ class Hero:
         return damage
 
     def gain_xp(self, amount: int) -> list[int]:
-        self.xp += amount
+        self.xp += max(0, amount)
         levels_gained: list[int] = []
         while self.xp >= self.xp_needed:
             self.xp -= self.xp_needed
             self.level += 1
-            self.max_hp += 20
-            self.base_attack += 3
-            self.base_defense += 2
+            hp_gain, attack_gain, defense_gain = hero_level_growth(self.level)
+            self.max_hp += hp_gain
+            self.base_attack += attack_gain
+            self.base_defense += defense_gain
             self.current_hp = self.max_hp
             levels_gained.append(self.level)
         return levels_gained
@@ -74,12 +85,6 @@ class Hero:
     def revive(self) -> None:
         self.deaths += 1
         self.current_hp = self.max_hp
-
-    def set_strategy(self, strategy: str) -> bool:
-        if strategy not in STRATEGY_MODIFIERS or strategy == self.strategy:
-            return False
-        self.strategy = strategy
-        return True
 
     def add_gold(self, amount: int) -> None:
         self.gold += max(0, amount)
@@ -90,7 +95,9 @@ class Hero:
 
     def equip_if_better(self, item: Item) -> bool:
         current = self.equipment.get(item.slot)
-        if current is None or item.power > current.power:
+        if current is not None and (current.favorite or current.locked):
+            return False
+        if current is None or item.build_score > current.build_score:
             self.equipment[item.slot] = item
             return True
         return False
@@ -112,7 +119,7 @@ class Hero:
         equipped = self.equipment.get(item.slot)
         return equipped is not None and equipped.item_id == item.item_id
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_core_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "level": self.level,
@@ -121,29 +128,47 @@ class Hero:
             "current_hp": self.current_hp,
             "base_attack": self.base_attack,
             "base_defense": self.base_defense,
+        }
+
+    def inventory_to_dict(self) -> list[dict[str, Any]]:
+        return [
+            {**item.to_dict(), "equipped": self.is_equipped(item)}
+            for item in self.inventory
+        ]
+
+    def equipment_to_dict(self) -> dict[str, dict[str, Any] | None]:
+        return {
+            slot: item.to_dict() if item else None
+            for slot, item in self.equipment.items()
+        }
+
+    def statistics_to_dict(self) -> dict[str, int]:
+        return {
+            "enemies_defeated": self.enemies_defeated,
+            "deaths": self.deaths,
+            "bosses_defeated": self.bosses_defeated,
+        }
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **self.to_core_dict(),
             "gold": self.gold,
-            "strategy": self.strategy,
-            "equipment": {
-                slot: item.to_dict() if item else None
-                for slot, item in self.equipment.items()
-            },
-            "inventory": [
-                {**item.to_dict(), "equipped": self.is_equipped(item)}
-                for item in self.inventory
-            ],
-            "statistics": {
-                "enemies_defeated": self.enemies_defeated,
-                "deaths": self.deaths,
-                "bosses_defeated": self.bosses_defeated,
-            },
+            "equipment": self.equipment_to_dict(),
+            "inventory": self.inventory_to_dict(),
+            "statistics": self.statistics_to_dict(),
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Hero:
         equipment_data = data.get("equipment", {})
+        if not isinstance(equipment_data, dict):
+            equipment_data = {}
+        inventory_data = data.get("inventory", [])
+        if not isinstance(inventory_data, list):
+            inventory_data = []
         inventory = [
             Item.from_dict(item_data)
-            for item_data in data.get("inventory", [])
+            for item_data in inventory_data
             if isinstance(item_data, dict)
         ]
         equipment: dict[str, Item | None] = {
@@ -153,7 +178,7 @@ class Hero:
         }
         for slot in equipment:
             item_data = equipment_data.get(slot)
-            if not item_data:
+            if not isinstance(item_data, dict):
                 continue
             equipped_item = Item.from_dict(item_data)
             matching_item = next(
@@ -166,11 +191,10 @@ class Hero:
             equipment[slot] = matching_item
 
         statistics = data.get("statistics", {})
-        max_hp = int(data.get("max_hp", 100))
+        if not isinstance(statistics, dict):
+            statistics = {}
+        max_hp = max(1, int(data.get("max_hp", 100)))
         current_hp = min(max_hp, max(1, int(data.get("current_hp", max_hp))))
-        strategy = str(data.get("strategy", "Balanceado"))
-        if strategy not in STRATEGY_MODIFIERS:
-            strategy = "Balanceado"
         return cls(
             name=str(data.get("name", "Aventureiro")),
             level=max(1, int(data.get("level", 1))),
@@ -182,7 +206,6 @@ class Hero:
             equipment=equipment,
             inventory=inventory,
             gold=max(0, int(data.get("gold", 0))),
-            strategy=strategy,
             enemies_defeated=max(0, int(statistics.get("enemies_defeated", 0))),
             deaths=max(0, int(statistics.get("deaths", 0))),
             bosses_defeated=max(0, int(statistics.get("bosses_defeated", 0))),

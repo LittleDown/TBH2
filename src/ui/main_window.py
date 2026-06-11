@@ -9,7 +9,8 @@ import tkinter as tk
 import customtkinter as ctk
 from PIL import Image, ImageTk
 
-from combat.combat import CombatEngine
+from application.game_session import GameSession
+from application.save_coordinator import SaveCoordinator
 from game_state import GameState
 from maps.campaign import ACT_NAME, MAP_NAMES
 from save.save_manager import SaveManager
@@ -50,11 +51,11 @@ class MainWindow(ctk.CTk):
         ("#9b7657", "#5d4d35", "#8a6a48", "camp"),
         ("#718294", "#4d5a42", "#817258", "hills"),
         ("#515463", "#313541", "#665f5c", "cemetery"),
-        ("#6f8791", "#3f5b51", "#80694d", "bridge"),
         ("#77766e", "#4d5041", "#756b55", "ruins"),
-        ("#89929a", "#56605d", "#777369", "fog"),
-        ("#7e6c65", "#4d433e", "#76624d", "gate"),
+        ("#6f8791", "#3f5b51", "#80694d", "bridge"),
         ("#514d58", "#36333c", "#62564e", "fortress"),
+        ("#7e6c65", "#4d433e", "#76624d", "gate"),
+        ("#3f3948", "#29262f", "#594b45", "fortress"),
     )
 
     def __init__(self, state: GameState, save_manager: SaveManager) -> None:
@@ -62,7 +63,8 @@ class MainWindow(ctk.CTk):
         self.game_state = state
         self.hero = state.hero
         self.save_manager = save_manager
-        self.combat = CombatEngine(state)
+        self.combat = GameSession(state)
+        self.save_coordinator = SaveCoordinator(state, save_manager)
         self.log_lines: deque[str] = deque(maxlen=1)
         self.panel_frames: dict[str, ctk.CTkFrame] = {}
         self.nav_buttons: dict[str, ctk.CTkButton] = {}
@@ -76,6 +78,7 @@ class MainWindow(ctk.CTk):
         self.display_enemy_name = ""
         self.display_enemy_level = 1
         self.display_enemy_is_boss = False
+        self.display_enemy_category = "common"
         self.display_enemy_key = "goblin"
         self.display_enemy_hp = 1
         self.display_enemy_max_hp = 1
@@ -916,26 +919,22 @@ class MainWindow(ctk.CTk):
         self.armor_slot = self._equipment_slot(equipment, 1, "ARMADURA")
         self.accessory_slot = self._equipment_slot(equipment, 2, "ACESSÓRIO")
 
-        strategy_row = ctk.CTkFrame(panel, fg_color="transparent")
-        strategy_row.grid(row=3, column=0, padx=7, pady=(5, 6), sticky="ew")
-        ctk.CTkLabel(
-            strategy_row,
-            text="ESTRATÉGIA",
-            width=67,
-            font=ctk.CTkFont(family="Consolas", size=8, weight="bold"),
-            text_color=self.COLORS["muted"],
-        ).pack(side="left")
-        self.strategy_control = ctk.CTkSegmentedButton(
-            strategy_row,
-            values=["Agressivo", "Balanceado", "Defensivo"],
-            command=self._change_strategy,
+        self.build_summary = ctk.CTkLabel(
+            panel,
+            text="",
             height=27,
-            selected_color=self.COLORS["gold_dark"],
-            selected_hover_color="#986822",
-            unselected_color=self.COLORS["panel_light"],
-            font=ctk.CTkFont(size=8),
+            fg_color=self.COLORS["panel_light"],
+            corner_radius=5,
+            font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+            text_color="#d7cedc",
         )
-        self.strategy_control.pack(side="left", fill="x", expand=True)
+        self.build_summary.grid(
+            row=3,
+            column=0,
+            padx=7,
+            pady=(5, 6),
+            sticky="ew",
+        )
         return panel
 
     def _equipment_slot(
@@ -1099,19 +1098,8 @@ class MainWindow(ctk.CTk):
         if self.journey.phase != "fight":
             return
         enemy_before_tick = self.combat.enemy
-        important_event = False
         events = self.combat.tick()
         self._capture_display_enemy(enemy_before_tick)
-        for event in events:
-            if event.kind in {
-                "victory",
-                "defeat",
-                "level_up",
-                "loot",
-                "map_complete",
-                "act_complete",
-            }:
-                important_event = True
 
         victory_event = next(
             (event for event in events if event.kind == "victory"),
@@ -1135,8 +1123,7 @@ class MainWindow(ctk.CTk):
                 attack_event.kind,
                 attack_event.amount or 0,
             )
-        if important_event:
-            self.save_manager.save(self.game_state)
+        self.save_coordinator.handle_events(events)
 
         if victory_event is not None:
             loot_event = next(
@@ -1170,23 +1157,22 @@ class MainWindow(ctk.CTk):
         self.display_enemy_name = enemy.name
         self.display_enemy_level = enemy.level
         self.display_enemy_is_boss = enemy.is_boss
+        self.display_enemy_category = getattr(enemy, "category", "common")
         self.display_enemy_key = (
             "boss"
             if enemy.is_boss
-            else self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower())
+            else getattr(
+                enemy,
+                "sprite_key",
+                self.ENEMY_SPRITES.get(enemy.name, enemy.name.lower()),
+            )
         )
         self.display_enemy_hp = enemy.current_hp
         self.display_enemy_max_hp = enemy.max_hp
 
     def _autosave(self) -> None:
-        self.save_manager.save(self.game_state)
+        self.save_coordinator.save_now()
         self.after(self.SAVE_INTERVAL_MS, self._autosave)
-
-    def _change_strategy(self, strategy: str) -> None:
-        if self.hero.set_strategy(strategy):
-            self._append_log(f"Estratégia alterada para {strategy}.")
-            self.save_manager.save(self.game_state)
-            self._refresh()
 
     def _equip_item(self, item_id: str) -> None:
         item = self.hero.equip(item_id)
@@ -1199,7 +1185,7 @@ class MainWindow(ctk.CTk):
             f"Poder {item.power} | +{bonus} {bonus_name}"
         )
         self._append_log(f"{item.name} equipado.")
-        self.save_manager.save(self.game_state)
+        self.save_coordinator.save_now()
         self._refresh()
 
     def _refresh(self) -> None:
@@ -1237,7 +1223,12 @@ class MainWindow(ctk.CTk):
                 f"ATK    {self.hero.attack:<3}   DEF   {self.hero.defense}"
             )
         )
-        self.strategy_control.set(self.hero.strategy)
+        self.build_summary.configure(
+            text=(
+                f"PODER {self.hero.power}  •  "
+                f"EQUIPAMENTO {self.hero.equipment_power}"
+            )
+        )
 
         weapon = self.hero.equipment["weapon"]
         armor = self.hero.equipment["armor"]
@@ -1363,6 +1354,7 @@ class MainWindow(ctk.CTk):
             self.scene_enemy_name,
             text=(
                 f"{'CHEFE ' if self.display_enemy_is_boss else ''}"
+                f"{'ELITE ' if self.display_enemy_category == 'elite' else ''}"
                 f"{self.display_enemy_name}  Nv.{self.display_enemy_level}"
             ),
         )
@@ -1521,5 +1513,5 @@ class MainWindow(ctk.CTk):
         return max(0.0, min(1.0, value / maximum))
 
     def _on_close(self) -> None:
-        self.save_manager.save(self.game_state)
+        self.save_coordinator.save_now()
         self.destroy()

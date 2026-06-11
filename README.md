@@ -13,8 +13,8 @@ decisões de baixa frequência em uma interface lateral compacta.
 
 A base Python agora inclui uma demo compacta de 360x600 com:
 
-- combate automático entre herói, Goblin, Lobo e Esqueleto;
-- três estratégias selecionáveis: Agressivo, Balanceado e Defensivo;
+- combate automático com pools de monstros próprios para cada mapa;
+- identidade de combate baseada em nível e equipamentos, sem estratégia manual;
 - experiência, level up, ouro, mortes e renascimento;
 - loot Comum, Raro e Épico com Poder escalável;
 - sprites temporários em pixel art para herói, inimigos, chefe e loot;
@@ -29,10 +29,10 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - ambientes simples específicos para cada mapa do Ato I;
 - inventário visual 5x4, autoequipamento e equipamento manual por clique;
 - painel de equipamentos com Arma, Armadura e Acessório;
-- dez mapas do Ato I, com dez vitórias por mapa;
-- chefe Capitão Ossonegro e conclusão do Ato I;
+- dez mapas oficiais do Ato I, com progressão por vitórias e portal de chefe;
+- Senhor dos Ossos como chefe oficial e conclusão do Ato I;
 - abas Hero, Inventory e Map;
-- save JSON versionado e migração do save antigo.
+- save JSON v3, migração de formatos antigos e recuperação por backup.
 
 ## Documentação
 
@@ -51,6 +51,7 @@ Documentos de entrada:
 - [Raças planejadas](docs/heroes/05_RACES.md)
 - [Dungeons planejadas](docs/maps/06_DUNGEONS.md)
 - [Relatório da demo](docs/DEMO_IMPLEMENTATION.md)
+- [Consolidação do repositório](docs/REPOSITORY_CONSOLIDATION.md)
 - [Sprint Exploração Viva](docs/EXPLORACAO_VIVA_SPRINT.md)
 - [Direção artística e worldbuilding](docs/art/01_ART_DIRECTION_WORLDBUILDING.md)
 
@@ -75,7 +76,7 @@ a cada dez segundos e ao fechar a janela.
 
 ## Controles
 
-- `Hero`: atributos, equipamentos e troca de estratégia.
+- `Hero`: atributos, poder da build e equipamentos.
 - `Inventory`: clique em um item para equipá-lo.
 - `Map`: acompanhe a campanha e o progresso até o chefe.
 

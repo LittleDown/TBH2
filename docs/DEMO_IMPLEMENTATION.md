@@ -1,5 +1,8 @@
 # Relatório da Demo Técnica Jogável
 
+> Documento histórico da demo inicial. O estado consolidado atual está em
+> [REPOSITORY_CONSOLIDATION.md](REPOSITORY_CONSOLIDATION.md).
+
 ## Objetivo
 
 Registrar o estado da demo técnica jogável do TBH2, as fontes analisadas, as alterações realizadas, as limitações conhecidas e os próximos passos recomendados.

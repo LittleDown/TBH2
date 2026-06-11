@@ -237,14 +237,18 @@ O jogador deve identificar claramente:
 
 ## Ajustes Obrigatórios
 
-* remover ou neutralizar estratégias legadas;
-* validar `GameState`;
-* validar save versionado;
-* revisar XP inicial;
-* revisar ganho de ouro;
+Concluídos em 2026-06-11:
+
+* estratégias legadas neutralizadas;
+* `GameState` e save versionado validados;
+* XP inicial e ganho de ouro centralizados;
+* nomenclatura do chefe do Ato I padronizada.
+
+Validações contínuas:
+
 * revisar tempo por mapa;
 * revisar dificuldade do chefe;
-* padronizar nomenclatura do chefe do Ato I.
+* executar simulações longas de progressão.
 
 ---
 

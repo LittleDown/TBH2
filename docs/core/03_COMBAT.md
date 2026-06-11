@@ -805,10 +805,6 @@ Fórmulas e constantes pertencem ao documento de balanceamento.
 
 # Pendências
 
-* Remover estratégias legadas da implementação.
-* Separar combate de recompensas no código.
-* Separar combate de progressão no código.
-* Definir eventos mínimos de combate.
 * Validar tempo médio de combate comum.
 * Validar tempo médio de combate elite.
 * Validar tempo médio de chefe.
@@ -824,6 +820,7 @@ Fórmulas e constantes pertencem ao documento de balanceamento.
 
 * 2026-06-10: removidos modos de combate.
 * 2026-06-10: introduzida filosofia de build.
+* 2026-06-11: estratégia legada removida e combate separado de recompensa e progressão.
 * 2026-06-10: reorganização completa do sistema de combate.
 * 2026-06-10: alinhamento com Progressão e Sistema de Itens.
 * 2026-06-10: documento reestruturado para separar combate, fórmulas, habilidades, monstros e recompensas.

@@ -59,7 +59,7 @@ Cada classe deve possuir:
 ## Regras
 
 - Classes são definições de conteúdo, não subclasses completas de `Hero`.
-- Estratégias Agressivo, Balanceado e Defensivo continuam independentes.
+- Classes futuras devem expressar identidade por atributos, equipamentos e habilidades automáticas, sem modos manuais de estratégia.
 - Toda classe deve completar o conteúdo solo.
 - O Healer precisa ser funcional antes da introdução de companheiros.
 - Árvores e habilidades pertencem à Fase 3.
@@ -75,3 +75,4 @@ Cada classe deve possuir:
 
 - 2026-06-10: arquétipos alinhados ao briefing de expansão.
 - 2026-06-10: criado o template modular.
+- 2026-06-11: removida a referência ativa às estratégias legadas.

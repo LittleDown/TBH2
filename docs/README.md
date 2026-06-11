@@ -22,6 +22,7 @@ In Progress
 * [Gameplay central](core/01_CORE_GAMEPLAY.md)
 * [Roadmap](technical/04_ROADMAP.md)
 * [Arquitetura técnica](technical/05_ARCHITECTURE.md)
+* [Consolidação do repositório](REPOSITORY_CONSOLIDATION.md)
 
 ---
 
@@ -381,3 +382,4 @@ Somente depois disso a documentação futura deve avançar para sistemas mais co
 * 2026-06-10: adicionada direção artística e worldbuilding.
 * 2026-06-10: definidos status documentais.
 * 2026-06-10: reforçada distinção entre documentação ativa e histórico.
+* 2026-06-11: adicionada a consolidação técnica executada após a reavaliação completa.

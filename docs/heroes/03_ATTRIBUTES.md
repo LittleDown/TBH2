@@ -53,7 +53,7 @@ Converte-se futuramente em:
 
 Direção planejada:
 
-`base + nível + raça + classe + equipamento → estratégia → valores efetivos`
+`base + nível + raça + classe + equipamento → valores efetivos`
 
 As conversões exatas devem ser centralizadas no sistema de atributos e no
 documento de fórmulas.
@@ -78,3 +78,4 @@ documento de fórmulas.
 
 - 2026-06-10: STR, DEX, INT e CON definidos conforme o briefing.
 - 2026-06-10: criado o template modular.
+- 2026-06-11: removida estratégia manual da ordem de composição.

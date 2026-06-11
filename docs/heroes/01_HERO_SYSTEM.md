@@ -19,7 +19,7 @@ In Progress
 
 ## Identidade
 
-Na demo atual, o herói possui nome, nível, estratégia e equipamento. A criação de
+Na demo atual, o herói possui nome, nível, atributos base e equipamento. A criação de
 personagem da Fase 2 adicionará raça e classe sem substituir a entidade existente.
 
 Escolhas planejadas:
@@ -34,7 +34,6 @@ Estado atual:
 
 - nível, XP, vida, ataque e defesa;
 - ouro;
-- estratégia;
 - inventário e equipamentos;
 - estatísticas de vitórias, mortes e chefes.
 
@@ -66,6 +65,7 @@ retomar a jornada. Penalidades adicionais não fazem parte deste briefing.
 - Nenhuma escolha de criação pode invalidar saves existentes.
 - Fórmulas derivadas pertencem ao sistema de atributos.
 - Passivas e habilidades não entram antes de suas fases do roadmap.
+- Campos de estratégia presentes em saves antigos são ignorados.
 
 ## Pendências
 
@@ -77,3 +77,4 @@ retomar a jornada. Penalidades adicionais não fazem parte deste briefing.
 
 - 2026-06-10: incorporada a visão de criação de personagem do briefing.
 - 2026-06-10: criado o template modular.
+- 2026-06-11: removida estratégia do estado ativo do herói.
