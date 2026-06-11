@@ -2,11 +2,12 @@
 
 ## Objetivo
 
-Definir identidade, estado, ciclo de vida e progressão individual do herói.
+Definir identidade, estado persistente, ciclo de vida e progressão individual do
+herói.
 
 ## Status
 
-Draft
+In Progress
 
 ## Dependências
 
@@ -14,34 +15,65 @@ Draft
 - [Classes](02_CLASSES.md)
 - [Atributos](03_ATTRIBUTES.md)
 - [Habilidades](04_SKILLS.md)
+- [Raças](05_RACES.md)
 
-## Visão Geral
+## Identidade
 
-<!-- Descrever o papel persistente do herói. -->
+Na demo atual, o herói possui nome, nível, estratégia e equipamento. A criação de
+personagem da Fase 2 adicionará raça e classe sem substituir a entidade existente.
 
-## Estrutura
+Escolhas planejadas:
 
-### Identidade
+- raça: Humano, Elfo, Anão ou Meio-Orc;
+- classe funcional: Tank, Healer ou DPS;
+- nome e identidade visual.
 
-### Estado
+## Estado
 
-### Progressão
+Estado atual:
 
-### Morte e Retorno
+- nível, XP, vida, ataque e defesa;
+- ouro;
+- estratégia;
+- inventário e equipamentos;
+- estatísticas de vitórias, mortes e chefes.
+
+Estado futuro:
+
+- `race_id`;
+- `class_id`;
+- STR, DEX, INT e CON;
+- habilidades e passivas desbloqueadas;
+- referências de companheiros ativos.
+
+## Progressão
+
+O nível continua sendo o eixo principal. Raça representa identidade persistente;
+classe representa estilo e progressão; equipamentos e atributos compõem a build.
+
+Novos sistemas devem estender o herói por dados e serviços, evitando subclasses
+profundas ou cópias da lógica de progressão.
+
+## Morte e Retorno
+
+A derrota mantém o comportamento idle: registrar a morte, restaurar o herói e
+retomar a jornada. Penalidades adicionais não fazem parte deste briefing.
 
 ## Regras
 
-<!-- Registrar invariantes do herói. -->
-
-## Dados
-
-<!-- Reservado para campos e referências ao modelo técnico. -->
+- Raça e classe são independentes.
+- O combate continua automático por padrão.
+- Nenhuma escolha de criação pode invalidar saves existentes.
+- Fórmulas derivadas pertencem ao sistema de atributos.
+- Passivas e habilidades não entram antes de suas fases do roadmap.
 
 ## Pendências
 
-- Definir limites entre herói, classe e equipamento.
+- Aprovar o fluxo visual de criação.
+- Definir defaults de migração.
+- Definir quando raça e classe podem ser alteradas.
 
 ## Histórico de Alterações
 
+- 2026-06-10: incorporada a visão de criação de personagem do briefing.
 - 2026-06-10: criado o template modular.
-

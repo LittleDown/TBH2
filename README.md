@@ -44,6 +44,8 @@ Documentos de entrada:
 - [Loot e economia](docs/core/04_LOOT_ECONOMY.md)
 - [Arquitetura técnica](docs/technical/05_ARCHITECTURE.md)
 - [Roadmap](docs/technical/04_ROADMAP.md)
+- [Raças planejadas](docs/heroes/05_RACES.md)
+- [Dungeons planejadas](docs/maps/06_DUNGEONS.md)
 - [Relatório da demo](docs/DEMO_IMPLEMENTATION.md)
 
 ## Requisitos

@@ -133,8 +133,9 @@ O herói não deve conhecer mapas, probabilidades de loot ou formato JSON.
 
 #### HeroClass
 
-Definição de classe, inicialmente representada por `Adventurer` e futuramente por
-`Warrior`, `Archer`, `Mage` e `Healer`.
+Definição de classe. O estado atual usa uma identidade neutra de aventureiro; a
+Fase 2 introduzirá os arquétipos funcionais `Tank`, `Healer` e `DPS`. Nomes de
+fantasia podem ser adicionados depois como conteúdo, sem alterar o contrato.
 
 Responsabilidades:
 
@@ -146,6 +147,19 @@ Responsabilidades:
 
 Classes devem ser definições de conteúdo ou estratégias de cálculo, não subclasses
 com cópias completas do comportamento de `Hero`.
+
+#### RaceDefinition
+
+Definição futura de conteúdo para Humano, Elfo, Anão e Meio-Orc.
+
+Responsabilidades:
+
+- modificadores pequenos de atributos;
+- referência a uma passiva racial futura;
+- identidade visual;
+- identificador estável persistido pelo herói.
+
+Raças não devem criar subclasses de `Hero`.
 
 #### CombatStrategy
 
@@ -264,6 +278,33 @@ Responsabilidades:
 - progresso dentro do mapa;
 - atos e chefes concluídos;
 - marcos e desbloqueios.
+
+#### CompanionState
+
+Estado futuro de um NPC de grupo.
+
+Responsabilidades:
+
+- referência à definição do companheiro;
+- nível sincronizado;
+- classe ou função;
+- equipamentos;
+- configuração automática.
+
+O grupo deve reutilizar participantes, atributos, equipamentos e eventos do
+combate existente.
+
+#### DungeonRun
+
+Estado transitório ou persistente futuro de uma dungeon.
+
+Responsabilidades:
+
+- dungeon e andar atuais;
+- chefes intermediário e final;
+- participantes;
+- recompensas ainda não consolidadas;
+- retomada da execução, caso aprovada.
 
 #### WorldDefinition
 
@@ -1023,4 +1064,3 @@ O modelo de leitura não é persistido.
 
 - 2026-06-10: criada a arquitetura técnica inicial a partir do GDD refinado e da
   implementação do protótipo.
-

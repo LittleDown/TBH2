@@ -39,6 +39,8 @@ verdade após esta migração.
 - [Classes](heroes/02_CLASSES.md)
 - [Atributos](heroes/03_ATTRIBUTES.md)
 - [Habilidades](heroes/04_SKILLS.md)
+- [Raças](heroes/05_RACES.md)
+- [Companheiros de grupo](heroes/06_PARTY_COMPANIONS.md)
 
 ### Monstros
 
@@ -54,6 +56,7 @@ verdade após esta migração.
 - [Ato II](maps/03_ACT_II.md)
 - [Ato III](maps/04_ACT_III.md)
 - [Dificuldades](maps/05_DIFFICULTIES.md)
+- [Dungeons](maps/06_DUNGEONS.md)
 
 ### Itens
 
@@ -105,4 +108,5 @@ verdade após esta migração.
 
 ## Histórico de Alterações
 
+- 2026-06-10: adicionados raças, companheiros de grupo e dungeons ao índice.
 - 2026-06-10: criada a arquitetura modular inicial.
