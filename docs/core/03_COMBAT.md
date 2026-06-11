@@ -1,5 +1,3 @@
-# COMBAT.md
-
 # Combate
 
 ## Objetivo
@@ -18,6 +16,27 @@ O combate é o principal mecanismo de transformação de tempo em progresso.
 
 Todo sistema de progressão do jogo depende diretamente do combate.
 
+O combate existe para validar a evolução do personagem.
+
+---
+
+## Status
+
+In Progress
+
+---
+
+## Dependências
+
+* Gameplay Central
+* Progressão
+* Sistema de Itens
+* Atributos
+* Classes
+* Habilidades
+* Sistema de Monstros
+* Balance Formulas
+
 ---
 
 # Filosofia de Combate
@@ -29,19 +48,46 @@ O combate do TBH2 é inspirado em:
 * Last Epoch
 * D&D
 
-Porém adaptado para um formato Idle Companion.
+Adaptado para um formato Idle Companion.
 
-O jogador não deve microgerenciar cada ação.
+O jogador não controla diretamente o combate.
 
-O foco está na preparação do personagem.
+O foco está na construção do personagem.
 
-A pergunta principal não é:
+A principal pergunta do sistema não é:
 
-> "Consigo clicar mais rápido?"
+> "Eu consigo executar melhor?"
 
-A pergunta principal é:
+A principal pergunta é:
 
-> "Minha build é forte o suficiente para vencer?"
+> "Meu personagem está preparado para este desafio?"
+
+O combate deve ser consequência das escolhas realizadas anteriormente.
+
+---
+
+# Filosofia de Build
+
+O TBH2 não utiliza modos de combate selecionáveis.
+
+Não existem estilos como:
+
+* agressivo;
+* balanceado;
+* defensivo.
+
+O comportamento do personagem é determinado por:
+
+* equipamentos;
+* atributos;
+* habilidades;
+* classe;
+* efeitos especiais;
+* sinergias.
+
+Dois personagens da mesma classe podem possuir comportamentos completamente diferentes dependendo da build construída.
+
+O estilo de combate emerge das escolhas do jogador.
 
 ---
 
@@ -57,35 +103,39 @@ Representa experiência acumulada.
 
 Impacto:
 
-* aumento de atributos básicos;
-* crescimento constante de poder.
+* crescimento constante;
+* atributos básicos;
+* acesso a conteúdos futuros.
 
 ---
 
 ## Equipamentos
 
-Principal fonte de força.
+Principal fonte de poder.
 
 Impacto:
 
 * dano;
 * sobrevivência;
-* especialização.
+* especialização;
+* identidade da build.
 
-Um equipamento melhor deve gerar mais impacto do que vários níveis consecutivos.
+Equipamentos devem possuir mais impacto do que múltiplos níveis consecutivos.
 
 ---
 
 ## Atributos
 
-Representam a direção da build.
+Definem a direção do personagem.
+
+Atributos primários:
 
 * STR
 * DEX
 * INT
 * CON
 
-Os atributos definem como o personagem converte equipamentos em poder.
+Os atributos convertem equipamentos em poder efetivo.
 
 ---
 
@@ -93,15 +143,18 @@ Os atributos definem como o personagem converte equipamentos em poder.
 
 Define identidade.
 
-As classes não existem apenas para alterar números.
+A classe influencia:
 
-Elas alteram a forma como o combate acontece.
+* equipamentos desejados;
+* atributos prioritários;
+* habilidades disponíveis;
+* estilo geral de combate.
 
 ---
 
 ## Habilidades
 
-Multiplicadores de poder.
+Representam a expressão final da build.
 
 Transformam atributos e equipamentos em ações visíveis durante o combate.
 
@@ -109,32 +162,33 @@ Transformam atributos e equipamentos em ações visíveis durante o combate.
 
 # Fluxo de Combate
 
-Todo encontro deve seguir o mesmo fluxo básico.
+Todo encontro segue o mesmo fluxo.
 
 Exploração
 ↓
 Encontro
 ↓
-Preparação
-↓
 Combate
 ↓
 Recompensa
+↓
+Progressão
 ↓
 Exploração
 
 O combate não é um sistema isolado.
 
-Ele faz parte da jornada do aventureiro.
+Ele faz parte do ciclo principal do jogo.
 
 ---
 
 # Objetivos do Combate
 
-Cada encontro deve responder pelo menos uma das seguintes perguntas:
+Todo encontro deve responder pelo menos uma das seguintes perguntas:
 
 * O personagem está forte o suficiente?
 * Os equipamentos são adequados?
+* Os atributos estão corretos?
 * A build está funcionando?
 * O jogador pode avançar para a próxima região?
 
@@ -146,45 +200,28 @@ A versão atual utiliza:
 
 * ataque automático;
 * defesa básica;
-* estratégias;
+* cálculo simples de dano;
 * recompensa automática.
 
-Estratégias disponíveis:
+O combate é resolvido sem intervenção direta do jogador.
 
-### Agressivo
-
-Mais dano.
-
-Menor sobrevivência.
-
----
-
-### Balanceado
-
-Equilíbrio entre ataque e defesa.
-
----
-
-### Defensivo
-
-Menor dano.
-
-Maior sobrevivência.
+O resultado depende exclusivamente da força construída pelo personagem.
 
 ---
 
 # Evolução Planejada
 
-O combate continuará sendo automático.
+O combate continuará sendo automático durante todo o ciclo de vida do projeto.
 
 Não existe intenção de transformar o TBH2 em um Action RPG.
 
-O jogador deve focar em:
+O foco permanece em:
 
 * progressão;
 * equipamentos;
 * builds;
-* decisões estratégicas.
+* otimização;
+* longo prazo.
 
 ---
 
@@ -194,7 +231,8 @@ Adicionar:
 
 * habilidades automáticas;
 * cooldowns;
-* prioridades.
+* prioridades de execução;
+* efeitos visuais de habilidades.
 
 ---
 
@@ -202,8 +240,9 @@ Adicionar:
 
 Adicionar:
 
-* sinergias de atributos;
+* sinergias entre atributos;
 * efeitos especiais;
+* modificadores de equipamentos;
 * interações entre habilidades.
 
 ---
@@ -213,7 +252,9 @@ Adicionar:
 Adicionar:
 
 * categorias avançadas de dano;
-* categorias avançadas de defesa.
+* categorias avançadas de defesa;
+* efeitos de controle;
+* resistências especializadas.
 
 ---
 
@@ -224,11 +265,12 @@ Adicionar:
 Fonte principal:
 
 * armas;
-* STR.
+* STR;
+* habilidades físicas.
 
 Mitigação:
 
-* armor.
+* Armor.
 
 ---
 
@@ -237,11 +279,12 @@ Mitigação:
 Fonte principal:
 
 * INT;
-* habilidades.
+* habilidades mágicas;
+* efeitos especiais.
 
 Mitigação:
 
-* spell armor.
+* Spell Armor.
 
 ---
 
@@ -249,13 +292,13 @@ Mitigação:
 
 Ignora mitigações tradicionais.
 
-Deve ser raro.
-
-Utilizado apenas em:
+Utilização prevista:
 
 * chefes;
-* habilidades especiais;
-* mecânicas específicas.
+* habilidades lendárias;
+* mecânicas especiais.
+
+Deve permanecer raro.
 
 ---
 
@@ -263,13 +306,17 @@ Utilizado apenas em:
 
 ## Armor
 
-Redução de dano físico.
+Reduz dano físico recebido.
+
+Principal defesa de guerreiros e armaduras pesadas.
 
 ---
 
 ## Spell Armor
 
-Redução de dano mágico.
+Reduz dano mágico recebido.
+
+Principal defesa contra conjuradores.
 
 ---
 
@@ -277,7 +324,9 @@ Redução de dano mágico.
 
 Chance de evitar completamente um ataque.
 
-Limites obrigatórios para evitar abuso.
+Mais comum em builds de DEX.
+
+Possui limite máximo para evitar abusos.
 
 ---
 
@@ -285,18 +334,20 @@ Limites obrigatórios para evitar abuso.
 
 Chance de bloquear ou reduzir um ataque.
 
-Mais comum em classes marciais.
+Mais comum em armas marciais e escudos.
 
 ---
 
-## Redução de Controle
+## Resistência a Controle
 
-Diminui duração de:
+Reduz duração de efeitos negativos.
+
+Exemplos:
 
 * stun;
 * slow;
 * silence;
-* outros efeitos.
+* fear.
 
 ---
 
@@ -306,44 +357,47 @@ Fluxo planejado:
 
 Ataque
 ↓
-Acerto
+Verificação de Acerto
 ↓
-Evasão
+Evasion
 ↓
 Parry
 ↓
 Crítico
 ↓
-Categoria de dano
+Categoria de Dano
 ↓
 Mitigação
 ↓
-Aplicação final
+Aplicação Final
 
-Esta ordem ainda está sujeita a testes.
+Esta ordem poderá ser ajustada durante os testes de balanceamento.
 
 ---
 
 # Filosofia de Balanceamento
 
-O combate deve ser fácil de entender.
+O combate deve ser simples de compreender.
 
 Difícil de otimizar.
 
-O jogador deve compreender rapidamente:
+O jogador deve entender claramente:
 
 * por que venceu;
 * por que perdeu;
 * o que precisa melhorar.
 
-Toda derrota deve sugerir uma solução clara:
+Toda derrota deve indicar uma solução possível.
+
+Exemplos:
 
 * subir de nível;
 * melhorar equipamentos;
 * revisar atributos;
-* ajustar estratégia.
+* melhorar a build;
+* revisar habilidades.
 
-Nunca deve parecer aleatória.
+Derrotas nunca devem parecer aleatórias.
 
 ---
 
@@ -352,12 +406,43 @@ Nunca deve parecer aleatória.
 O sistema de combate será considerado saudável quando:
 
 * equipamentos forem relevantes;
-* níveis tiverem impacto;
+* níveis possuírem impacto;
+* classes apresentarem identidade própria;
+* habilidades criarem diferenças perceptíveis;
 * chefes representarem desafios reais;
-* builds diferentes produzirem resultados diferentes;
+* builds distintas produzirem resultados distintos;
 * derrotas possuírem explicação clara;
 * vitórias gerarem sensação de progresso.
 
-O combate existe para validar a evolução do personagem.
+---
 
-Não para substituir essa evolução.
+# Regras
+
+* O combate permanece automático.
+* O jogador não controla ações individuais.
+* Não existirão modos de combate selecionáveis.
+* O estilo de combate é definido pela build.
+* Equipamentos possuem prioridade sobre níveis como fonte de poder.
+* Habilidades amplificam a build, não substituem equipamentos.
+* Toda nova mecânica deve reforçar a progressão do personagem.
+
+---
+
+# Pendências
+
+* Definir fórmulas finais de dano.
+* Definir fórmulas de Armor e Spell Armor.
+* Definir limites de Evasion.
+* Definir limites de Parry.
+* Definir limites de Crítico.
+* Definir sistema de controle.
+* Integrar habilidades ao fluxo de combate.
+
+---
+
+# Histórico de Alterações
+
+* 2026-06-10: removidos modos de combate.
+* 2026-06-10: introduzida Filosofia de Build.
+* 2026-06-10: reorganização completa do sistema de combate.
+* 2026-06-10: alinhamento com Progressão e Sistema de Itens.

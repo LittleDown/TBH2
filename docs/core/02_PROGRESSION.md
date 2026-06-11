@@ -995,22 +995,253 @@ Recuperação total.
 
 # Regras de Balanceamento
 
+## Objetivo
+
+O balanceamento do TBH2 deve garantir que novos sistemas sejam construídos sobre uma fundação sólida.
+
+Adicionar conteúdo sobre uma progressão mal calibrada gera retrabalho, inflação de poder e perda de identidade do jogo.
+
+Por esse motivo, nenhum sistema avançado deve ser implementado antes da validação da fundação principal.
+
+---
+
+# Ordem de Prioridade
+
+A progressão do personagem deve ser construída na seguinte ordem:
+
+Progressão
+↓
+Equipamentos
+↓
+Atributos
+↓
+Classes
+↓
+Habilidades
+↓
+Raças
+↓
+Sistemas Avançados
+
+Cada camada depende da estabilidade da camada anterior.
+
+---
+
+# Critérios de Validação
+
 Antes de adicionar:
 
 * novas raças;
 * novas habilidades;
 * talentos;
+* árvores de especialização;
 * sistemas avançados;
 
-o sistema deve responder:
+o jogo deve responder positivamente aos critérios abaixo.
 
-1. A progressão está divertida?
-2. O level up possui valor?
-3. Os equipamentos possuem impacto?
-4. Os mapas possuem identidade?
-5. Os chefes são memoráveis?
+---
 
-Somente após essas respostas serem positivas novos sistemas devem ser adicionados.
+## 1. A Progressão Está Divertida?
+
+O jogador deve sentir evolução constante.
+
+Perguntas:
+
+* O jogador percebe que está ficando mais forte?
+* O próximo nível é desejado?
+* O progresso continua interessante após várias horas?
+* Existem objetivos de curto, médio e longo prazo?
+
+Sinais de problema:
+
+* níveis sem impacto;
+* progressão muito rápida;
+* progressão excessivamente lenta;
+* sensação de estagnação.
+
+---
+
+## 2. O Level Up Possui Valor?
+
+Subir de nível deve ser relevante.
+
+O jogador deve perceber imediatamente:
+
+* aumento de poder;
+* aumento de sobrevivência;
+* acesso a novos conteúdos.
+
+Sinais de problema:
+
+* subir de nível não muda nada;
+* equipamentos tornam níveis irrelevantes;
+* níveis se tornam apenas números.
+
+---
+
+## 3. Os Equipamentos Possuem Impacto?
+
+Equipamentos são a principal fonte de crescimento do personagem.
+
+Um item melhor deve gerar mais impacto do que vários níveis consecutivos.
+
+Perguntas:
+
+* o jogador fica animado ao encontrar loot?
+* trocar um item é uma decisão?
+* existe sensação de recompensa?
+
+Sinais de problema:
+
+* itens são ignorados;
+* loot parece irrelevante;
+* equipamentos possuem diferenças mínimas.
+
+---
+
+## 4. Os Mapas Possuem Identidade?
+
+Cada mapa deve possuir personalidade própria.
+
+Diferenças esperadas:
+
+* ambientação;
+* inimigos;
+* ritmo;
+* recompensas;
+* chefe.
+
+O jogador deve reconhecer um mapa sem precisar ler seu nome.
+
+Sinais de problema:
+
+* todos os mapas parecem iguais;
+* apenas números mudam;
+* não existe sensação de jornada.
+
+---
+
+## 5. Os Chefes São Memoráveis?
+
+Chefes são marcos de progressão.
+
+Funções:
+
+* validar poder;
+* encerrar capítulos;
+* criar momentos marcantes.
+
+Perguntas:
+
+* o chefe exige preparação?
+* o jogador lembra dele?
+* derrotá-lo gera satisfação?
+
+Sinais de problema:
+
+* chefes morrem como inimigos comuns;
+* não existe expectativa;
+* não existe recompensa especial.
+
+---
+
+## 6. O Jogador Sempre Possui um Objetivo?
+
+Inspirado em Diablo e Path of Exile.
+
+O jogador deve possuir simultaneamente:
+
+### Curto Prazo
+
+* próximo nível;
+* próximo item;
+* próximo upgrade.
+
+### Médio Prazo
+
+* próximo mapa;
+* próximo chefe;
+* próximo ato.
+
+### Longo Prazo
+
+* próxima dificuldade;
+* próxima build;
+* próximo equipamento raro.
+
+Se o jogador não possui objetivos claros, a progressão está falhando.
+
+---
+
+## 7. O Poder Está Distribuído Corretamente?
+
+O crescimento do personagem deve vir de múltiplas fontes.
+
+Distribuição desejada:
+
+Equipamentos → Principal fonte de poder
+
+Atributos → Especialização
+
+Classe → Identidade
+
+Habilidades → Multiplicadores
+
+Nível → Crescimento base
+
+Sinais de problema:
+
+* níveis fazem tudo;
+* habilidades fazem tudo;
+* equipamentos não importam.
+
+---
+
+## 8. Existe Espaço para Crescimento Futuro?
+
+Todo sistema deve deixar espaço para expansão.
+
+Perguntas:
+
+* ainda existem melhorias desejáveis?
+* ainda existem itens para buscar?
+* ainda existem desafios para superar?
+
+O jogador nunca deve sentir que concluiu completamente o personagem cedo demais.
+
+---
+
+# Regra Principal
+
+Nenhum sistema novo deve ser implementado para corrigir um sistema antigo.
+
+Exemplo:
+
+Não criar habilidades porque o combate está sem graça.
+
+Primeiro corrigir o combate.
+
+Não criar raças porque os atributos estão sem identidade.
+
+Primeiro corrigir os atributos.
+
+Não criar novos mapas porque a progressão está rápida demais.
+
+Primeiro corrigir a progressão.
+
+Cada problema deve ser resolvido em sua camada de origem.
+
+---
+
+# Filosofia Final
+
+O objetivo do balanceamento não é impedir o crescimento do jogador.
+
+O objetivo é garantir que cada nova conquista tenha significado.
+
+Quando o jogador encontra um item, sobe de nível, derrota um chefe ou desbloqueia uma nova dificuldade, ele deve sentir que avançou em sua jornada.
+
+Se a recompensa não gera emoção ou expectativa, o sistema precisa ser revisado antes da expansão do conteúdo.
 
 ---
 
