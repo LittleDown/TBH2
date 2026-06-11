@@ -1,22 +1,75 @@
-# TBH2 - PROGRESSÃO E BALANCEAMENTO
+# Progressão
+
+## Objetivo
+
+Definir os princípios, camadas e ritmo de progressão do TBH2.
+
+Este documento descreve como o jogador deve perceber evolução ao longo do tempo.
+
+Ele não define fórmulas finais, habilidades específicas, listas de itens, chefes específicos ou valores numéricos definitivos.
+
+A progressão deve responder à pergunta:
+
+> "O que faz o jogador sentir que avançou?"
+
+---
 
 ## Status
 
-Draft
+In Progress
 
 ---
 
-# Objetivo
+## Dependências
 
-Definir os princípios de progressão do TBH2.
-
-Este documento não contém fórmulas definitivas.
-
-Seu objetivo é estabelecer como o crescimento do jogador deve ser percebido ao longo da vida útil do jogo.
+* [Gameplay central](01_CORE_GAMEPLAY.md)
+* [Combate](03_COMBAT.md)
+* [Loot e economia](04_LOOT_ECONOMY.md)
+* [Sistema de itens](../items/01_ITEM_SYSTEM.md)
+* [Sistema de herói](../heroes/01_HERO_SYSTEM.md)
+* [Estrutura do mundo](../maps/01_WORLD_STRUCTURE.md)
+* [Dificuldades](../maps/05_DIFFICULTIES.md)
+* [Fórmulas de balanceamento](../technical/03_BALANCE_FORMULAS.md)
 
 ---
 
-# Filosofia de Progressão
+# Escopo deste Documento
+
+Este documento define:
+
+* filosofia de progressão;
+* ritmo de evolução;
+* função dos níveis;
+* função dos mapas;
+* função dos atos;
+* função das dificuldades;
+* horizontes de curto, médio e longo prazo;
+* relação entre nível, equipamento, atributos, classe e habilidades;
+* critérios de validação da progressão.
+
+---
+
+# Fora do Escopo
+
+Este documento não deve definir:
+
+* fórmulas finais de XP;
+* fórmulas finais de HP, dano ou defesa;
+* lista completa de habilidades;
+* cooldowns de habilidades;
+* lista completa de itens;
+* afixos;
+* raridades detalhadas;
+* chefes específicos;
+* tabelas de loot;
+* valores finais de ouro;
+* implementação técnica.
+
+Esses assuntos pertencem aos documentos proprietários de cada domínio.
+
+---
+
+# Visão Geral
 
 TBH2 é um Idle RPG Companion.
 
@@ -25,51 +78,74 @@ A progressão deve ser:
 * perceptível;
 * recompensadora;
 * escalável;
-* duradoura.
+* duradoura;
+* compatível com baixa frequência de interação.
 
-O jogador deve sentir evolução constante.
+O jogador deve sentir evolução constante sem precisar controlar cada ação do personagem.
 
-Ao mesmo tempo, o jogo deve possuir conteúdo suficiente para semanas ou meses de progresso.
+A progressão ideal acontece quando o jogador sempre possui algo a perseguir.
+
+---
+
+# Filosofia de Progressão
+
+A progressão do TBH2 deve funcionar em múltiplas camadas.
+
+O jogador não deve depender apenas do próximo nível para sentir evolução.
+
+Quando uma camada desacelera, outra deve assumir importância.
+
+Exemplo:
+
+* se o próximo nível demora, o jogador busca um item melhor;
+* se o item não aparece, o jogador tenta avançar mapa;
+* se o mapa trava, o jogador melhora a build;
+* se o chefe bloqueia, o jogador farma e retorna mais forte.
+
+A progressão saudável mantém o jogador em movimento.
 
 ---
 
 # Princípios Fundamentais
 
-## 1. O jogador deve subir rápido no início
+## 1. O Início Deve Ser Rápido
 
 Os primeiros níveis funcionam como tutorial.
 
 Objetivos:
 
-* apresentar sistemas;
-* apresentar equipamentos;
+* apresentar exploração;
 * apresentar combate;
-* apresentar exploração.
+* apresentar loot;
+* apresentar equipamentos;
+* apresentar progressão de mapas.
 
 O jogador deve sentir crescimento imediato.
 
 ---
 
-## 2. O jogo desacelera gradualmente
+## 2. A Progressão Deve Desacelerar Gradualmente
 
-A velocidade de progressão deve diminuir conforme o nível aumenta.
+A velocidade de progressão deve diminuir conforme o personagem evolui.
 
-O jogador não deve alcançar níveis elevados em poucas horas.
+O jogador não deve alcançar níveis altos em poucos minutos.
 
-A progressão deve parecer natural.
+A desaceleração deve ser natural, não frustrante.
 
 ---
 
-## 3. O poder deve crescer constantemente
+## 3. O Poder Deve Continuar Crescendo
 
-Mesmo quando subir de nível demora mais.
+Mesmo quando subir de nível demora mais, o jogador deve encontrar outras formas de progresso.
 
-O jogador deve encontrar:
+Exemplos:
 
-* equipamentos;
-* melhorias;
-* novos mapas;
-* novas dificuldades.
+* item melhor;
+* novo mapa;
+* nova raridade;
+* melhoria de build;
+* novo chefe;
+* nova dificuldade.
 
 ---
 
@@ -77,154 +153,172 @@ O jogador deve encontrar:
 
 O nível não é o único indicador de evolução.
 
-No TBH2, o avanço pelos mapas representa a jornada física do aventureiro através do mundo.
+No TBH2, mapas representam a jornada física do aventureiro pelo mundo.
 
-Enquanto os níveis representam experiência e poder acumulado, os mapas representam conquista, exploração e acesso a novos desafios.
+Enquanto níveis representam experiência acumulada, mapas representam conquista, exploração e acesso a novos desafios.
 
-Um personagem de mesmo nível pode estar em mapas completamente diferentes dependendo de:
+Um personagem de mesmo nível pode estar em mapas diferentes dependendo de:
 
 * equipamentos;
 * eficiência da build;
 * dificuldade escolhida;
-* tempo investido.
+* tempo investido;
+* sorte no loot.
 
 O jogador deve sentir orgulho tanto ao subir de nível quanto ao conquistar uma nova região.
 
 ---
 
-# Estrutura de Níveis
+## 5. A Progressão Deve Gerar Objetivos Constantes
 
-A progressão de níveis define a velocidade com que o jogador evolui.
+O jogador deve possuir simultaneamente:
 
-Ela deve ser rápida no início e desacelerar gradualmente conforme o personagem se torna mais poderoso.
+* objetivo imediato;
+* objetivo de sessão;
+* objetivo de longo prazo.
+
+A ausência de objetivo é sinal de falha na progressão.
 
 ---
 
-## Tutorial (Level 1 - 10)
+# Loop de Progressão
 
-Objetivo:
+A progressão acompanha o loop central do jogo:
 
-Apresentar os sistemas fundamentais do jogo.
+Exploração
+↓
+Encontro
+↓
+Combate
+↓
+Recompensa
+↓
+Progressão
+↓
+Exploração
 
-Durante esta fase o jogador aprende:
+Cada ciclo deve gerar alguma forma de avanço, mesmo que pequena.
+
+---
+
+# Estrutura de Níveis
+
+A progressão de níveis define a velocidade com que o personagem ganha experiência e crescimento base.
+
+Ela deve ser rápida no início e desacelerar conforme o personagem se torna mais poderoso.
+
+---
+
+## Tutorial — Níveis 1 a 10
+
+## Objetivo
+
+Apresentar os sistemas fundamentais.
+
+O jogador aprende:
 
 * exploração;
 * combate;
-* equipamentos;
 * loot;
+* equipamentos;
 * progressão de mapas.
 
-Características:
+## Características
 
-* XP baixa;
 * level up frequente;
 * recompensas constantes;
-* sensação de crescimento acelerado.
+* baixa exigência de otimização;
+* primeiros equipamentos relevantes.
 
-Tempo estimado:
-
-30 a 60 minutos de jogo ativo.
-
-Sensação desejada:
+## Sensação desejada
 
 > "Estou ficando mais forte rapidamente."
 
 ---
 
-## Early Game (Level 11 - 20)
+## Early Game — Níveis 11 a 20
 
-Objetivo:
+## Objetivo
 
 Consolidar o aprendizado.
 
-O jogador começa a perceber que equipamentos possuem impacto significativo.
+O jogador começa a perceber que equipamentos possuem impacto real.
 
-Características:
+## Características
 
-* XP moderada;
-* primeiros gargalos de progresso;
-* introdução da importância do loot.
+* progressão moderada;
+* primeiros gargalos leves;
+* maior atenção ao loot;
+* primeiros sinais de build.
 
-Tempo estimado:
-
-2 a 4 horas acumuladas.
-
-Sensação desejada:
+## Sensação desejada
 
 > "Agora preciso melhorar meu personagem para avançar."
 
 ---
 
-## Mid Game (Level 21 - 50)
+## Mid Game — Níveis 21 a 50
 
-Objetivo:
+## Objetivo
 
 Introduzir otimização.
 
-O jogador deixa de ganhar poder apenas por subir de nível.
+O jogador deixa de depender apenas do nível.
 
-Equipamentos começam a ter mais impacto do que níveis.
+Equipamentos passam a ter impacto maior.
 
-Características:
+## Características
 
-* XP crescente;
 * progressão mais lenta;
-* primeiros desafios relevantes;
-* chefes mais importantes.
+* chefes mais relevantes;
+* necessidade crescente de equipamentos melhores;
+* primeiras decisões claras de build.
 
-Tempo estimado:
-
-10 a 20 horas acumuladas.
-
-Sensação desejada:
+## Sensação desejada
 
 > "Preciso encontrar itens melhores."
 
 ---
 
-## Late Game (Level 51 - 100)
+## Late Game — Níveis 51 a 100
 
-Objetivo:
+## Objetivo
 
 Criar metas de longo prazo.
 
-O personagem já possui identidade própria.
+O personagem já possui identidade mais definida.
 
-As decisões de build se tornam importantes.
+## Características
 
-Características:
-
-* XP alta;
 * progressão lenta;
-* dependência crescente de equipamentos;
-* preparação para dificuldades avançadas.
+* dependência forte de equipamentos;
+* preparação para dificuldades superiores;
+* busca por sinergias.
 
-Tempo estimado:
-
-Dezenas de horas acumuladas.
-
-Sensação desejada:
+## Sensação desejada
 
 > "Meu personagem está entrando em um novo patamar."
 
 ---
 
-## Endgame (Level 100+)
+## Endgame — Nível 100+
 
-Objetivo:
+## Objetivo
 
-Manter o jogo vivo indefinidamente.
+Manter o jogo vivo após a progressão principal.
 
-A progressão deixa de ser sobre níveis e passa a ser sobre eficiência.
+A progressão deixa de depender principalmente de nível e passa a depender de otimização.
 
-O foco passa para:
+## Foco
 
 * equipamentos raros;
-* otimização;
+* builds especializadas;
 * dificuldades superiores;
-* farm especializado.
+* farm direcionado;
+* chefes avançados;
+* conteúdo repetível futuro.
 
-Sensação desejada:
+## Sensação desejada
 
 > "Ainda posso melhorar."
 
@@ -232,28 +326,34 @@ Sensação desejada:
 
 # Progressão por Mapas
 
-Cada Ato é composto por 10 mapas.
+Cada ato é composto por dez mapas.
 
 Os mapas possuem identidade própria e representam regiões distintas do mundo.
+
+Mapas não são apenas cenários.
+
+Eles são etapas da jornada.
 
 ---
 
 ## Mapas 1 a 9
 
-Função:
+## Função
 
 * exploração;
 * farm;
 * obtenção de ouro;
 * obtenção de equipamentos;
-* preparação para o chefe.
+* preparação para o chefe;
+* avanço gradual de dificuldade.
 
 Cada mapa deve possuir:
 
 * tema visual próprio;
 * inimigos próprios;
 * ambientação própria;
-* aumento gradual de dificuldade.
+* ritmo próprio;
+* aumento gradual de desafio.
 
 O jogador deve perceber que está atravessando uma região real.
 
@@ -261,94 +361,98 @@ O jogador deve perceber que está atravessando uma região real.
 
 ## Mapa 10
 
-Função:
+## Função
 
-Chefe do Ato.
+Chefe do ato.
 
-Todo mapa 10 deve conter:
+Todo mapa 10 deve representar o fechamento de um capítulo.
 
-* boss único;
-* nome próprio;
+Deve conter:
+
+* chefe único;
 * maior dificuldade do ato;
-* recompensa superior.
+* recompensa superior;
+* bloqueio de avanço;
+* sensação de conquista.
 
-O chefe deve funcionar como um teste do progresso do jogador.
-
-Se o jogador não consegue derrotar o chefe, provavelmente ainda precisa:
+Se o jogador não consegue derrotar o chefe, provavelmente precisa:
 
 * subir níveis;
 * melhorar equipamentos;
-* otimizar atributos.
+* revisar atributos;
+* otimizar build;
+* farmar mapas anteriores.
 
-Sensação desejada:
+## Sensação desejada
 
 > "Conquistei esta região."
 
 ---
 
-# Progressão de Dificuldade
+# Progressão por Atos
 
-Após concluir um Ato, o jogador desbloqueia uma dificuldade superior.
+Atos representam capítulos maiores da campanha.
 
-Exemplo:
+Cada ato deve possuir:
 
-Estrada Abandonada (Normal)
-↓
-Estrada Abandonada (Veterano)
-↓
-Estrada Abandonada (Pesadelo)
-↓
-Estrada Abandonada (Infernal)
+* tema visual próprio;
+* identidade de monstros;
+* curva de dificuldade;
+* chefe final;
+* recompensas compatíveis;
+* sensação de avanço de mundo.
 
-A região permanece a mesma.
-
-O desafio muda.
-
-Os inimigos ficam mais fortes.
-
-As recompensas aumentam.
-
-O jogador revisita conteúdos antigos sob uma nova perspectiva.
+A progressão por atos deve fazer o jogador sentir que saiu de uma região e entrou em outra etapa da jornada.
 
 ---
 
-# Filosofia de Progressão
+# Progressão por Dificuldades
 
-A progressão do TBH2 deve ser inspirada nos princípios que tornam jogos como Diablo 4 e Path of Exile altamente rejogáveis.
+Dificuldades representam novos ciclos de progressão.
 
-O jogador nunca deve possuir apenas um objetivo.
+Elas não devem servir apenas para aumentar números.
 
-A motivação do jogo deve ser construída através de múltiplas camadas de progresso funcionando simultaneamente.
+Ao avançar de dificuldade, o jogador revisita conteúdos anteriores sob maior ameaça e com melhores recompensas.
 
-Quando uma camada desacelera, outra assume o protagonismo.
+Dificuldades previstas:
 
-Isso garante que o jogador continue sentindo evolução mesmo quando o próximo nível demora mais para chegar.
+* Normal;
+* Veterano;
+* Pesadelo;
+* Infernal.
+
+As regras detalhadas pertencem ao documento:
+
+* [Dificuldades](../maps/05_DIFFICULTIES.md)
 
 ---
 
 # Progressão em Camadas
 
-O TBH2 deve operar em três horizontes de recompensa:
+O TBH2 deve operar em três horizontes de recompensa.
+
+---
 
 ## Curto Prazo
 
 Recompensas percebidas em minutos.
 
-Objetivo:
+## Objetivo
 
 Manter o jogador engajado durante a sessão atual.
 
-Exemplos:
+## Exemplos
 
-* próximo nível;
+* próximo combate vencido;
 * próximo item;
 * próximo upgrade;
 * próxima raridade;
-* próximo equipamento para substituir um slot.
+* próximo nível;
+* próximo progresso de mapa.
 
-O jogador deve sentir que algo positivo acontece constantemente.
+## Sensação desejada
 
-Mesmo em sessões curtas.
+> "Algo está acontecendo."
 
 ---
 
@@ -356,19 +460,21 @@ Mesmo em sessões curtas.
 
 Recompensas percebidas em horas.
 
-Objetivo:
+## Objetivo
 
 Criar metas claras de avanço.
 
-Exemplos:
+## Exemplos
 
 * concluir um mapa;
 * derrotar um chefe;
 * completar um ato;
 * desbloquear nova região;
-* alcançar um novo marco de poder.
+* alcançar novo marco de poder.
 
-O jogador deve possuir sempre um objetivo visível no horizonte.
+## Sensação desejada
+
+> "Estou avançando."
 
 ---
 
@@ -376,293 +482,51 @@ O jogador deve possuir sempre um objetivo visível no horizonte.
 
 Recompensas percebidas em dias ou semanas.
 
-Objetivo:
+## Objetivo
 
 Manter o jogo relevante por longos períodos.
 
-Exemplos:
+## Exemplos
 
 * desbloquear nova dificuldade;
 * completar uma build;
 * encontrar equipamentos raros;
 * otimizar atributos;
-* derrotar chefes avançados.
+* superar chefes avançados;
+* preparar conteúdo futuro de endgame.
 
-O jogador deve sentir que sempre existe um próximo degrau a ser alcançado.
+## Sensação desejada
 
----
-
-# Filosofia de Equipamentos
-
-Inspirado em Diablo e Path of Exile.
-
-O equipamento é a principal fonte de crescimento do personagem.
-
-O jogador não deve ficar forte apenas por subir de nível.
-
-O verdadeiro salto de poder deve vir de:
-
-* armas;
-* armaduras;
-* acessórios;
-* raridades superiores.
-
-O nível abre caminhos.
-
-O equipamento gera poder.
+> "Meu personagem está evoluindo continuamente."
 
 ---
 
-# Filosofia dos Mapas
+# Fontes de Poder
 
-Os mapas são a representação física do progresso.
+O poder do personagem deve crescer por múltiplas camadas.
 
-Não são apenas cenários.
-
-Cada mapa deve representar:
-
-* novos inimigos;
-* novos desafios;
-* novas recompensas;
-* aumento de dificuldade.
-
-O jogador deve sentir que está atravessando um mundo.
-
----
-
-# Filosofia dos Chefes
-
-Todo chefe deve funcionar como uma verificação de progresso.
-
-Ao chegar em um chefe o jogador deve responder:
-
-"Meu personagem está pronto para continuar?"
-
-Se a resposta for não:
-
-* farmar equipamentos;
-* ganhar níveis;
-* melhorar atributos.
-
-Se a resposta for sim:
-
-* derrotar o chefe;
-* desbloquear nova região;
-* avançar na jornada.
-
----
-
-# Filosofia das Dificuldades
-
-As dificuldades não servem apenas para aumentar números.
-
-Elas existem para criar novos ciclos de progressão.
-
-O jogador deve revisitar conteúdos antigos sob uma nova perspectiva.
-
-Inspirado em Diablo.
-
----
-
-## Normal
-
-Primeira Jornada.
-
-Objetivo:
-
-* aprender sistemas;
-* conhecer inimigos;
-* experimentar equipamentos.
-
-Sensação:
-
-> Estou descobrindo o mundo.
-
----
-
-## Veterano
-
-Primeira Escalada.
-
-Objetivo:
-
-* aumentar desafio;
-* valorizar equipamentos;
-* introduzir necessidade de otimização.
-
-Sensação:
-
-> Preciso começar a prestar atenção na minha build.
-
----
-
-## Pesadelo
-
-Especialização.
-
-Objetivo:
-
-* exigir equipamentos adequados;
-* exigir atributos corretos;
-* destacar diferenças entre builds.
-
-Sensação:
-
-> Nem todo personagem consegue avançar da mesma forma.
-
----
-
-## Infernal
-
-Endgame.
-
-Objetivo:
-
-* conteúdo de longo prazo;
-* busca por itens raros;
-* otimização máxima.
-
-Sensação:
-
-> Estou aperfeiçoando meu personagem.
-
----
-
-# Filosofia de Repetição
-
-A repetição deve ser recompensadora.
-
-O jogador revisita conteúdos antigos para obter:
-
-* experiência;
-* ouro;
-* equipamentos;
-* progresso de build.
-
-A repetição nunca deve parecer desperdício de tempo.
-
-Ela deve representar preparação para o próximo desafio.
-
----
-
-# Objetivo Final
-
-O jogador deve abrir o TBH2 e sempre possuir algo para perseguir.
-
-Se o próximo nível estiver distante:
-
-* existe um item melhor.
-
-Se o item estiver distante:
-
-* existe um chefe.
-
-Se o chefe estiver derrotado:
-
-* existe uma dificuldade superior.
-
-Se a dificuldade estiver concluída:
-
-* existe uma build para otimizar.
-
-A progressão saudável acontece quando o jogador nunca fica sem objetivos.
-
-
----
-
-# Progressão de Equipamentos
-
-O equipamento deve ser o principal fator de poder do personagem.
-
-O nível fornece:
-
-* atributos básicos;
-* desbloqueios.
-
-Os equipamentos fornecem:
-
-* crescimento real de poder.
-
-Inspirado em:
-
-* Diablo
-* Path of Exile
-* Last Epoch
-
----
-
-# Progressão de Ouro
-
-O ouro deve acompanhar o crescimento do jogador.
-
-Objetivos:
-
-* upgrades;
-* manutenção;
-* futuras mecânicas.
-
-O ouro nunca deve se tornar irrelevante.
-
----
-
-# Progressão de Inimigos
-
-Inimigos devem escalar conforme:
-
-* mapa;
-* ato;
-* dificuldade.
-
-Os atributos mínimos:
-
-* vida;
-* dano;
-* defesa.
-
-Chefes devem possuir escalas próprias.
-
----
-
-# Progressão de Chefes
-
-Cada chefe deve representar um marco.
-
-O jogador deve perceber claramente:
-
-"Estou mais forte do que quando enfrentei este desafio pela primeira vez."
-
----
-
-# Curva de Poder
-
-O crescimento do personagem deve ocorrer através de múltiplas camadas de progressão.
-
-Cada camada possui uma função específica dentro do jogo e nenhuma delas deve substituir completamente as demais.
-
-O objetivo é garantir que o jogador sempre tenha algo para evoluir, seja em minutos, horas ou semanas de jogo.
+Nenhuma camada deve substituir completamente as demais.
 
 ---
 
 ## Nível
 
-**Função:** Crescimento constante.
+## Função
 
-O nível representa a experiência acumulada pelo aventureiro ao longo de sua jornada.
+Crescimento constante.
 
-Ao subir de nível, o jogador recebe aumentos básicos de poder, garantindo que nunca fique completamente estagnado.
+O nível representa experiência acumulada.
 
-O nível deve fornecer:
+Deve fornecer:
 
-* aumento de vida;
-* aumento de dano base;
-* aumento de defesa base;
-* acesso a novos conteúdos.
+* aumento base de poder;
+* sensação de continuidade;
+* referência de maturidade do personagem;
+* acesso futuro a conteúdos.
 
-O nível não deve ser a principal fonte de poder do jogo.
+O nível não deve ser a principal fonte de poder.
 
-Seu papel é garantir progresso contínuo e servir como referência da experiência do personagem.
-
-**Sensação desejada:**
+## Sensação desejada
 
 > "Meu personagem está ficando mais experiente."
 
@@ -670,28 +534,26 @@ Seu papel é garantir progresso contínuo e servir como referência da experiên
 
 ## Equipamentos
 
-**Função:** Principal fonte de poder.
+## Função
 
-Equipamentos representam a maior parte do crescimento do personagem.
+Principal fonte de poder.
 
-Um único item de qualidade superior deve causar mais impacto do que diversos níveis consecutivos.
+Equipamentos devem representar os maiores saltos de força do personagem.
 
-Os equipamentos devem permitir:
+Um item relevante deve poder gerar mais impacto do que vários níveis consecutivos.
 
-* aumentos significativos de atributos;
-* especialização de builds;
-* busca por melhorias constantes;
-* sensação de recompensa ao derrotar inimigos e chefes.
+Equipamentos devem permitir:
 
-O jogador deve ficar animado ao encontrar um novo item.
+* aumento de poder;
+* especialização;
+* melhoria de build;
+* busca constante por upgrades.
 
-Inspirado em:
+As regras detalhadas pertencem ao documento:
 
-* Diablo
-* Path of Exile
-* Last Epoch
+* [Sistema de itens](../items/01_ITEM_SYSTEM.md)
 
-**Sensação desejada:**
+## Sensação desejada
 
 > "Encontrei algo que realmente deixou meu personagem mais forte."
 
@@ -699,43 +561,36 @@ Inspirado em:
 
 ## Atributos
 
-**Função:** Especialização.
+## Função
 
-Os atributos definem a forma como o personagem cresce.
+Especialização.
+
+Atributos definem como o personagem cresce.
 
 Todos os personagens possuem:
 
-* STR
-* DEX
-* INT
-* CON
+* STR;
+* DEX;
+* INT;
+* CON.
 
-Porém cada classe prioriza atributos diferentes.
+Os detalhes pertencem ao documento:
 
-Os atributos permitem criar personagens distintos mesmo dentro da mesma classe.
+* [Atributos](../heroes/03_ATTRIBUTES.md)
 
-Exemplos:
+## Sensação desejada
 
-* Guerreiros focados em sobrevivência;
-* Guerreiros focados em dano;
-* Magos focados em explosão;
-* Magos focados em suporte.
-
-Os atributos não servem apenas para aumentar números.
-
-Eles servem para criar identidade e escolhas.
-
-**Sensação desejada:**
-
-> "Estou construindo um personagem único."
+> "Estou moldando meu personagem."
 
 ---
 
 ## Classe
 
-**Função:** Definir identidade.
+## Função
 
-A classe determina o estilo geral de jogo do personagem.
+Identidade.
+
+A classe determina o estilo geral do personagem.
 
 Ela influencia:
 
@@ -744,319 +599,160 @@ Ela influencia:
 * habilidades disponíveis;
 * papel em combate.
 
-As classes não devem existir apenas para mudar números.
+Os detalhes pertencem ao documento:
 
-Cada classe deve alterar a maneira como o jogador enxerga sua progressão.
+* [Classes](../heroes/02_CLASSES.md)
 
-Exemplos:
-
-* Guerreiro: resistência e combate direto;
-* Arqueiro: precisão e velocidade;
-* Mago: poder mágico e controle;
-* Curandeiro: suporte e sobrevivência.
-
-**Sensação desejada:**
+## Sensação desejada
 
 > "Este personagem possui uma identidade própria."
 
 ---
 
-# Sistema Inicial de Habilidades
+## Habilidades
 
-## Guerreiro
+## Função
 
-Função:
-Combate corpo a corpo, resistência e controle.
+Multiplicar e expressar a build.
 
-### Habilidade 1 — Golpe Poderoso
+Habilidades não devem substituir equipamentos como principal fonte de poder.
 
-Cooldown: 4s
+Elas devem ampliar o estilo da classe e transformar atributos e itens em ações visíveis no combate automático.
 
-Um ataque reforçado que causa dano aumentado baseado em STR.
+Os detalhes pertencem ao documento:
 
-Função:
-Ataque básico principal.
+* [Habilidades](../heroes/04_SKILLS.md)
 
----
+## Sensação desejada
 
-### Habilidade 2 — Escudo Defensivo
-
-Cooldown: 12s
-
-Reduz o dano recebido durante alguns segundos.
-
-Escala com CON.
-
-Função:
-Sobrevivência.
+> "Minha build está funcionando."
 
 ---
 
-### Habilidade 3 — Investida
+# Repetição Saudável
 
-Cooldown: 15s
+A repetição deve ser recompensadora.
 
-Avança rapidamente contra o inimigo causando dano e aplicando Atordoamento.
+O jogador pode revisitar conteúdos para obter:
 
-Escala com STR.
+* experiência;
+* ouro;
+* equipamentos;
+* progresso de build;
+* preparação para chefes;
+* preparação para dificuldades superiores.
 
-Função:
-Controle de combate.
+A repetição não deve parecer desperdício de tempo.
 
----
-
-### Ultimate — Ira do Campeão
-
-Cooldown: 60s
-
-Durante alguns segundos:
-
-* aumenta dano;
-* aumenta velocidade de ataque;
-* reduz dano recebido.
-
-Função:
-Janela de explosão de poder.
+Ela deve representar preparação.
 
 ---
 
-# Arqueiro
+# Relação com Ouro
 
-Função:
-Precisão, mobilidade e dano contínuo.
+O ouro deve acompanhar o crescimento do jogador.
 
-### Habilidade 1 — Disparo Preciso
+Ele deve funcionar como recurso de longo prazo.
 
-Cooldown: 3s
+Possíveis usos futuros:
 
-Flecha reforçada com chance crítica aumentada.
+* upgrades;
+* serviços;
+* reroll;
+* craft;
+* ajustes de build;
+* manutenção de sistemas futuros.
 
-Escala com DEX.
+As fórmulas e valores pertencem aos documentos:
 
-Função:
-Ataque principal.
-
----
-
-### Habilidade 2 — Passo Sombrio
-
-Cooldown: 12s
-
-Aumenta evasão temporariamente.
-
-Escala com DEX.
-
-Função:
-Defesa.
+* [Loot e economia](04_LOOT_ECONOMY.md)
+* [Fórmulas de balanceamento](../technical/03_BALANCE_FORMULAS.md)
 
 ---
 
-### Habilidade 3 — Chuva de Flechas
+# Relação com Monstros
 
-Cooldown: 18s
+Inimigos devem escalar conforme:
 
-Dispara várias flechas rapidamente.
+* mapa;
+* ato;
+* dificuldade;
+* categoria;
+* modificadores.
 
-Escala com DEX.
+Monstros não devem escalar apenas pelo nível do herói.
 
-Função:
-Dano em área.
+O mundo define o desafio.
 
----
+As regras detalhadas pertencem ao documento:
 
-### Ultimate — Tiro Mortal
-
-Cooldown: 60s
-
-Dispara uma flecha devastadora.
-
-Dano massivo.
-
-Chance crítica dobrada.
-
-Função:
-Finalizador.
+* [Sistema de monstros](../monsters/01_MONSTER_SYSTEM.md)
 
 ---
 
-# Mago
+# Relação com Chefes
 
-Função:
-Explosão de dano e controle.
+Chefes representam marcos de progressão.
 
-### Habilidade 1 — Míssil Arcano
+Eles devem validar:
 
-Cooldown: 3s
+* nível;
+* equipamentos;
+* atributos;
+* build;
+* sobrevivência;
+* dano.
 
-Projétil mágico de dano direto.
+Chefes não são apenas inimigos com mais vida.
 
-Escala com INT.
+Eles bloqueiam avanço e encerram capítulos.
 
-Função:
-Ataque principal.
+As regras detalhadas pertencem ao documento:
 
----
-
-### Habilidade 2 — Escudo Arcano
-
-Cooldown: 15s
-
-Cria uma barreira absorvendo dano.
-
-Escala com INT.
-
-Função:
-Sobrevivência.
+* [Chefes](../monsters/04_BOSSES.md)
 
 ---
 
-### Habilidade 3 — Nova Congelante
+# Relação com Balanceamento
 
-Cooldown: 20s
+Este documento define intenção e sensação.
 
-Congela ou desacelera inimigos.
+As fórmulas pertencem ao documento:
 
-Escala com INT.
+* [Fórmulas de balanceamento](../technical/03_BALANCE_FORMULAS.md)
 
-Função:
-Controle.
+Exemplos de assuntos que não devem ser definidos aqui:
 
----
-
-### Ultimate — Meteoro
-
-Cooldown: 60s
-
-Invoca um meteoro causando enorme dano mágico.
-
-Função:
-Explosão máxima.
-
----
-
-# Curandeiro
-
-Função:
-Suporte, cura e resistência.
-
-### Habilidade 1 — Luz Restauradora
-
-Cooldown: 4s
-
-Recupera vida.
-
-Escala com INT.
-
-Função:
-Sustentação.
-
----
-
-### Habilidade 2 — Bênção Divina
-
-Cooldown: 15s
-
-Aumenta defesa e regeneração.
-
-Escala com CON.
-
-Função:
-Proteção.
-
----
-
-### Habilidade 3 — Julgamento Sagrado
-
-Cooldown: 18s
-
-Causa dano radiante ao inimigo.
-
-Escala com INT.
-
-Função:
-Ataque secundário.
-
----
-
-### Ultimate — Milagre
-
-Cooldown: 75s
-
-Cura completamente o personagem.
-
-Remove efeitos negativos.
-
-Concede regeneração temporária.
-
-Função:
-Recuperação total.
-
----
-
-# Regras de Balanceamento
-
-## Objetivo
-
-O balanceamento do TBH2 deve garantir que novos sistemas sejam construídos sobre uma fundação sólida.
-
-Adicionar conteúdo sobre uma progressão mal calibrada gera retrabalho, inflação de poder e perda de identidade do jogo.
-
-Por esse motivo, nenhum sistema avançado deve ser implementado antes da validação da fundação principal.
-
----
-
-# Ordem de Prioridade
-
-A progressão do personagem deve ser construída na seguinte ordem:
-
-Progressão
-↓
-Equipamentos
-↓
-Atributos
-↓
-Classes
-↓
-Habilidades
-↓
-Raças
-↓
-Sistemas Avançados
-
-Cada camada depende da estabilidade da camada anterior.
+* XP exata por nível;
+* multiplicador de dificuldade;
+* HP de monstros;
+* dano final;
+* ouro por encontro;
+* Power exato;
+* Build Score exato.
 
 ---
 
 # Critérios de Validação
 
-Antes de adicionar:
-
-* novas raças;
-* novas habilidades;
-* talentos;
-* árvores de especialização;
-* sistemas avançados;
-
-o jogo deve responder positivamente aos critérios abaixo.
+A progressão será considerada saudável quando responder positivamente aos critérios abaixo.
 
 ---
 
-## 1. A Progressão Está Divertida?
-
-O jogador deve sentir evolução constante.
+## 1. O Jogador Percebe Evolução?
 
 Perguntas:
 
-* O jogador percebe que está ficando mais forte?
-* O próximo nível é desejado?
-* O progresso continua interessante após várias horas?
-* Existem objetivos de curto, médio e longo prazo?
+* o jogador percebe que está ficando mais forte?
+* o próximo nível é desejado?
+* o progresso continua interessante após várias horas?
+* existem objetivos de curto, médio e longo prazo?
 
 Sinais de problema:
 
 * níveis sem impacto;
-* progressão muito rápida;
-* progressão excessivamente lenta;
+* progressão rápida demais;
+* progressão lenta demais;
 * sensação de estagnação.
 
 ---
@@ -1065,31 +761,30 @@ Sinais de problema:
 
 Subir de nível deve ser relevante.
 
-O jogador deve perceber imediatamente:
+O jogador deve perceber:
 
 * aumento de poder;
 * aumento de sobrevivência;
-* acesso a novos conteúdos.
+* acesso ou aproximação de novos conteúdos.
 
 Sinais de problema:
 
 * subir de nível não muda nada;
-* equipamentos tornam níveis irrelevantes;
-* níveis se tornam apenas números.
+* níveis viram apenas números;
+* equipamentos anulam totalmente o valor do nível.
 
 ---
 
 ## 3. Os Equipamentos Possuem Impacto?
 
-Equipamentos são a principal fonte de crescimento do personagem.
-
-Um item melhor deve gerar mais impacto do que vários níveis consecutivos.
+Equipamentos são a principal fonte de crescimento.
 
 Perguntas:
 
 * o jogador fica animado ao encontrar loot?
-* trocar um item é uma decisão?
+* trocar item é uma decisão?
 * existe sensação de recompensa?
+* Build Score ajuda a entender valor real?
 
 Sinais de problema:
 
@@ -1101,7 +796,7 @@ Sinais de problema:
 
 ## 4. Os Mapas Possuem Identidade?
 
-Cada mapa deve possuir personalidade própria.
+Cada mapa deve possuir personalidade.
 
 Diferenças esperadas:
 
@@ -1109,9 +804,7 @@ Diferenças esperadas:
 * inimigos;
 * ritmo;
 * recompensas;
-* chefe.
-
-O jogador deve reconhecer um mapa sem precisar ler seu nome.
+* sensação de ameaça.
 
 Sinais de problema:
 
@@ -1121,83 +814,72 @@ Sinais de problema:
 
 ---
 
-## 5. Os Chefes São Memoráveis?
+## 5. Os Chefes Funcionam Como Marcos?
 
-Chefes são marcos de progressão.
-
-Funções:
-
-* validar poder;
-* encerrar capítulos;
-* criar momentos marcantes.
+Chefes devem encerrar etapas.
 
 Perguntas:
 
 * o chefe exige preparação?
-* o jogador lembra dele?
 * derrotá-lo gera satisfação?
+* ele bloqueia avanço de forma justa?
+* a recompensa é percebida como superior?
 
 Sinais de problema:
 
-* chefes morrem como inimigos comuns;
+* chefe morre como inimigo comum;
+* chefe parece injusto;
 * não existe expectativa;
 * não existe recompensa especial.
 
 ---
 
-## 6. O Jogador Sempre Possui um Objetivo?
-
-Inspirado em Diablo e Path of Exile.
+## 6. O Jogador Sempre Possui Objetivo?
 
 O jogador deve possuir simultaneamente:
 
-### Curto Prazo
+## Curto Prazo
 
-* próximo nível;
+* próximo combate;
 * próximo item;
-* próximo upgrade.
+* próximo nível.
 
-### Médio Prazo
+## Médio Prazo
 
 * próximo mapa;
 * próximo chefe;
 * próximo ato.
 
-### Longo Prazo
+## Longo Prazo
 
 * próxima dificuldade;
 * próxima build;
-* próximo equipamento raro.
+* próximo item raro.
 
-Se o jogador não possui objetivos claros, a progressão está falhando.
+Se o jogador não possui objetivo claro, a progressão falhou.
 
 ---
 
 ## 7. O Poder Está Distribuído Corretamente?
 
-O crescimento do personagem deve vir de múltiplas fontes.
-
 Distribuição desejada:
 
-Equipamentos → Principal fonte de poder
-
-Atributos → Especialização
-
-Classe → Identidade
-
-Habilidades → Multiplicadores
-
-Nível → Crescimento base
+* equipamentos como principal fonte de poder;
+* atributos como especialização;
+* classe como identidade;
+* habilidades como expressão da build;
+* nível como crescimento base.
 
 Sinais de problema:
 
 * níveis fazem tudo;
 * habilidades fazem tudo;
-* equipamentos não importam.
+* equipamentos não importam;
+* atributos não mudam decisões.
 
 ---
 
-## 8. Existe Espaço para Crescimento Futuro?
+## 8. Existe Espaço Para Crescimento Futuro?
 
 Todo sistema deve deixar espaço para expansão.
 
@@ -1206,8 +888,9 @@ Perguntas:
 * ainda existem melhorias desejáveis?
 * ainda existem itens para buscar?
 * ainda existem desafios para superar?
+* ainda existe uma próxima meta?
 
-O jogador nunca deve sentir que concluiu completamente o personagem cedo demais.
+O jogador não deve sentir que concluiu completamente o personagem cedo demais.
 
 ---
 
@@ -1215,45 +898,76 @@ O jogador nunca deve sentir que concluiu completamente o personagem cedo demais.
 
 Nenhum sistema novo deve ser implementado para corrigir um sistema antigo.
 
-Exemplo:
+Exemplos:
 
-Não criar habilidades porque o combate está sem graça.
-
-Primeiro corrigir o combate.
-
-Não criar raças porque os atributos estão sem identidade.
-
-Primeiro corrigir os atributos.
-
-Não criar novos mapas porque a progressão está rápida demais.
-
-Primeiro corrigir a progressão.
+* não criar habilidades porque o combate está sem graça;
+* primeiro corrigir o combate;
+* não criar raças porque atributos estão sem identidade;
+* primeiro corrigir atributos;
+* não criar novos mapas porque a progressão está rápida demais;
+* primeiro corrigir a progressão.
 
 Cada problema deve ser resolvido em sua camada de origem.
 
 ---
 
-# Filosofia Final
-
-O objetivo do balanceamento não é impedir o crescimento do jogador.
-
-O objetivo é garantir que cada nova conquista tenha significado.
-
-Quando o jogador encontra um item, sobe de nível, derrota um chefe ou desbloqueia uma nova dificuldade, ele deve sentir que avançou em sua jornada.
-
-Se a recompensa não gera emoção ou expectativa, o sistema precisa ser revisado antes da expansão do conteúdo.
-
----
-
 # Meta da Versão 1.0
 
-Ao deixar o TBH2 aberto durante um dia inteiro, o jogador deve perceber:
+Ao deixar o TBH2 aberto durante longos períodos, o jogador deve perceber:
 
 * evolução constante;
 * novos equipamentos;
 * avanço de mapas;
 * aumento gradual de poder;
 * objetivos de curto prazo;
-* objetivos de longo prazo.
+* objetivos de longo prazo;
+* sensação de jornada contínua.
 
-A progressão deve incentivar retorno diário sem exigir atenção constante.
+A progressão deve incentivar retorno sem exigir atenção constante.
+
+---
+
+# Regras
+
+* Progressão deve ser perceptível.
+* Progressão não deve depender apenas de nível.
+* Equipamentos devem ser a principal fonte de poder.
+* Mapas representam conquista física do mundo.
+* Chefes representam bloqueios e marcos.
+* Dificuldades representam novos ciclos.
+* Habilidades não devem ser documentadas em detalhe neste arquivo.
+* Fórmulas não devem ser definidas neste arquivo.
+* Conteúdo específico deve permanecer nos documentos proprietários.
+* Todo novo sistema deve reforçar o loop central.
+
+---
+
+# Dados
+
+Reservado para marcos conceituais de progressão.
+
+Fórmulas, constantes e tabelas pertencem ao documento de balanceamento.
+
+---
+
+# Pendências
+
+* Validar tempo real dos níveis 1 a 10.
+* Validar tempo real dos níveis 11 a 20.
+* Validar ritmo dos mapas do Ato I.
+* Validar dificuldade do chefe do Ato I.
+* Validar impacto dos equipamentos na progressão.
+* Definir metas de tempo por mapa.
+* Definir critérios numéricos no documento de balanceamento.
+* Remover conteúdo de habilidades deste arquivo e manter em `heroes/04_SKILLS.md`.
+* Remover regras técnicas de balanceamento deste arquivo quando já existirem em `technical/03_BALANCE_FORMULAS.md`.
+
+---
+
+# Histórico de Alterações
+
+* 2026-06-10: documento inicial de progressão criado.
+* 2026-06-10: conceito de Mapa como Progresso incorporado.
+* 2026-06-10: progressão em camadas registrada.
+* 2026-06-10: curva de poder reorganizada.
+* 2026-06-10: documento reestruturado para separar progressão de GDD, habilidades e fórmulas.
