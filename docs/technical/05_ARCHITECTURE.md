@@ -2,822 +2,1023 @@
 
 ## Objetivo
 
-Definir a arquitetura técnica futura do TBH2 e alinhar a implementação atual aos
-domínios necessários para mapas, atos, dificuldades, ouro, estratégias, loot
-escalável e classes.
+Definir a arquitetura técnica futura do TBH2 e alinhar a implementação atual aos domínios necessários para evolução do projeto.
 
-Este documento descreve responsabilidades, limites e fluxo de dados. Ele não
-define fórmulas de balanceamento nem solicita implementação imediata.
+Este documento descreve responsabilidades, limites, fluxo de dados e direção de migração.
+
+Ele não define fórmulas de balanceamento, conteúdo de campanha ou implementação imediata.
+
+---
 
 ## Status
 
 Draft
 
+---
+
 ## Dependências
 
-- [Gameplay central](../core/01_CORE_GAMEPLAY.md)
-- [Progressão](../core/02_PROGRESSION.md)
-- [Combate](../core/03_COMBAT.md)
-- [Loot e economia](../core/04_LOOT_ECONOMY.md)
-- [Sistema de herói](../heroes/01_HERO_SYSTEM.md)
-- [Classes](../heroes/02_CLASSES.md)
-- [Sistema de monstros](../monsters/01_MONSTER_SYSTEM.md)
-- [Estrutura do mundo](../maps/01_WORLD_STRUCTURE.md)
-- [Sistema de itens](../items/01_ITEM_SYSTEM.md)
-- [Sistema de save](01_SAVE_SYSTEM.md)
-- [Modelo de dados](02_DATA_MODEL.md)
-- [Fórmulas de balanceamento](03_BALANCE_FORMULAS.md)
+* Gameplay Central
+* Progressão
+* Combate
+* Loot e Economia
+* Sistema de Herói
+* Sistema de Itens
+* Sistema de Monstros
+* Estrutura do Mundo
+* Sistema de Save
+* Modelo de Dados
+* Fórmulas de Balanceamento
 
-## Visão Geral
+---
 
-### Estado Atual
+# Visão Geral
+
+O TBH2 deve evoluir para uma arquitetura simples, modular e testável.
+
+A arquitetura deve preservar três objetivos:
+
+1. Manter o jogo executável a cada fase.
+2. Separar regras de jogo da interface.
+3. Evitar que sistemas futuros quebrem save, progressão ou combate.
+
+A estrutura técnica deve servir ao jogo.
+
+Não deve virar complexidade por si mesma.
+
+---
+
+# Estado Atual
 
 O protótipo atual possui uma separação inicial por pastas:
 
-- `hero`: estado e progressão do herói;
-- `enemies`: definição e geração de inimigos;
-- `items`: catálogo fixo e sorteio de loot;
-- `combat`: loop, vitória, derrota, experiência e loot;
-- `save`: leitura e escrita de `save.json`;
-- `ui`: janela, agendamento do loop, apresentação e autosave.
+* `hero`: estado e progressão do herói;
+* `enemies`: definição e geração de inimigos;
+* `items`: catálogo e sorteio de loot;
+* `combat`: loop de combate, vitória, derrota, experiência e loot;
+* `save`: leitura e escrita do save;
+* `ui`: janela, loop visual, eventos e autosave.
 
-Essa estrutura é adequada para provar o combate básico, mas apresenta limitações
-para a evolução do GDD:
+Essa estrutura foi suficiente para validar a demo técnica.
 
-- `CombatEngine` coordena regras de vários domínios;
-- inimigos escalam diretamente pelo nível do herói, sem contexto de campanha;
-- itens são instâncias fixas e não possuem base, origem ou Poder escalável;
-- o herói concentra estado, cálculo de atributos e serialização;
-- o save persiste apenas o herói, não a campanha completa;
-- a UI controla o relógio do jogo e decide eventos de persistência;
-- ouro, estratégias, mapas, atos, dificuldades e classes não possuem modelos
-  próprios;
-- conteúdo e regras estão codificados nos mesmos módulos.
+Porém apresenta limitações para expansão:
 
-### Direção Arquitetural
+* `CombatEngine` concentra responsabilidades demais;
+* a UI participa de decisões de loop e persistência;
+* inimigos ainda não dependem claramente de mapa, ato e dificuldade;
+* itens precisam separar definição base de instância gerada;
+* save precisa persistir `GameState`, não apenas partes isoladas;
+* regras de recompensa, loot e progressão precisam sair do combate;
+* conteúdo e regra ainda estão muito próximos;
+* estratégia de combate deve ser removida como sistema ativo.
+
+---
+
+# Direção Arquitetural
 
 A arquitetura futura deve usar quatro camadas leves:
 
-1. **Domínio:** entidades, objetos de valor e regras puras.
-2. **Aplicação:** sistemas que executam casos de uso e coordenam o domínio.
-3. **Infraestrutura:** save, relógio, geração aleatória e carregamento de conteúdo.
-4. **Apresentação:** interface de Taskbar e adaptação de eventos para o usuário.
+1. Domínio
+2. Aplicação
+3. Infraestrutura
+4. Apresentação
 
-O projeto não precisa adotar um framework de arquitetura. A separação existe para
-manter dependências previsíveis e permitir testes sem interface gráfica.
+Não é necessário adotar framework pesado.
 
-### Princípio Central
+A separação existe para deixar claro quem decide o quê.
 
-O estado persistente da partida deve ser representado por um agregado
-`GameState`. Sistemas de aplicação recebem esse estado e comandos, aplicam regras
-de domínio e retornam eventos. A interface apresenta os eventos, mas não decide
-recompensas, progressão ou regras de combate.
+---
 
-```mermaid
-flowchart LR
-    UI["Presentation / Taskbar UI"]
-    APP["Application / Game Systems"]
-    DOMAIN["Domain / Entities and Rules"]
-    INFRA["Infrastructure / Save, RNG, Clock, Content"]
+# Princípio Central
 
-    UI -->|commands| APP
-    APP -->|uses| DOMAIN
-    APP -->|ports| INFRA
-    INFRA -->|data and adapters| APP
-    APP -->|events and view state| UI
+O estado persistente da partida deve ser representado por um agregado principal:
+
+```text
+GameState
 ```
 
-## Estrutura
+A interface não deve decidir regras de jogo.
 
-### 1. Entidades do Domínio
+A interface envia comandos.
 
-#### GameState
+A aplicação processa comandos.
 
-Agregado raiz da partida persistente.
+O domínio aplica regras.
+
+A infraestrutura salva, carrega, fornece tempo, aleatoriedade e conteúdo.
+
+A interface recebe eventos e estado de leitura.
+
+---
+
+# Camadas
+
+## 1. Domínio
+
+Contém entidades, objetos de valor e regras puras.
+
+Pode conter:
+
+* Hero;
+* ItemInstance;
+* MonsterInstance;
+* CampaignProgress;
+* Wallet;
+* GameState;
+* regras de dano;
+* regras de equipamento;
+* eventos de domínio.
+
+Não pode conter:
+
+* CustomTkinter;
+* leitura de arquivos;
+* escrita de JSON;
+* timers de interface;
+* texto formatado para UI;
+* caminhos locais;
+* lógica visual.
+
+---
+
+## 2. Aplicação
+
+Coordena casos de uso.
+
+Pode conter:
+
+* GameSession;
+* CombatSystem;
+* EncounterSystem;
+* RewardSystem;
+* LootSystem;
+* EquipmentSystem;
+* ProgressionSystem;
+* EconomySystem;
+* SaveCoordinator;
+* comandos;
+* eventos;
+* view models.
+
+Não pode conter:
+
+* widgets;
+* detalhes de arquivo;
+* catálogo hardcoded sem repositório;
+* regra visual da interface.
+
+---
+
+## 3. Infraestrutura
+
+Implementa portas técnicas.
+
+Pode conter:
+
+* repositório JSON;
+* migrações de save;
+* carregamento de conteúdo;
+* fonte de aleatoriedade;
+* relógio;
+* logging técnico.
+
+Não pode conter:
+
+* regra de combate;
+* decisão de loot;
+* progressão de mapa;
+* regra visual.
+
+---
+
+## 4. Apresentação
+
+Representa a interface de Taskbar.
+
+Pode conter:
+
+* janela principal;
+* componentes visuais;
+* presenter;
+* formatação de eventos;
+* animações;
+* agendamento visual com `after`;
+* botões e painéis.
+
+Não pode conter:
+
+* regra de recompensa;
+* regra de combate;
+* cálculo de XP;
+* geração de loot;
+* decisão de save;
+* avanço de mapa por conta própria.
+
+A UI pode iniciar ticks.
+
+Mas quem processa o tick é a aplicação.
+
+---
+
+# GameState
+
+## Objetivo
+
+Representar o estado completo persistente da partida.
+
+`GameState` é o agregado raiz do save.
+
+---
+
+## Responsabilidades
+
+* reunir herói, mundo, economia, inventário e estatísticas;
+* representar uma fotografia consistente do progresso;
+* possuir versão de schema;
+* permitir save, load e migração;
+* servir como entrada principal dos sistemas de aplicação.
+
+---
+
+## Composição Planejada
+
+```text
+GameState
+├── save_version
+├── created_at
+├── updated_at
+├── hero
+├── inventory
+├── equipment
+├── world_progress
+├── wallet
+├── statistics
+├── session_state
+├── daily_state
+└── companion_state
+```
+
+---
+
+## Não Deve
+
+* acessar arquivos;
+* criar inimigos sozinho;
+* sortear loot;
+* controlar interface;
+* conter catálogos completos de conteúdo.
+
+---
+
+# Entidades Principais do Domínio
+
+## Hero
+
+Representa o aventureiro do jogador.
 
 Responsabilidades:
 
-- reunir o estado do herói, campanha, economia e estatísticas;
-- garantir que o save represente uma fotografia consistente;
-- fornecer um único ponto de entrada para carregamento e persistência;
-- armazenar a versão do esquema de dados.
+* identidade;
+* nível;
+* XP;
+* vida;
+* atributos;
+* classe;
+* raça;
+* equipamentos;
+* estatísticas próprias.
 
-Relações:
+Campos futuros:
 
-- possui um `Hero`;
-- possui um `CampaignProgress`;
-- possui uma `Wallet`;
-- possui `GameStatistics`;
-- referencia o encontro atual quando ele precisar ser persistido.
+```text
+hero_id
+name
+level
+xp
+current_hp
+max_hp
+strength
+dexterity
+intelligence
+constitution
+class_id
+race_id
+```
+
+---
+
+## Observação sobre Estratégia
+
+Campos antigos relacionados a estratégia devem ser tratados como legado.
+
+O projeto não deve manter:
+
+* StrategySystem;
+* CombatStrategy ativo;
+* ChangeCombatStrategy;
+* modos agressivo, balanceado ou defensivo.
+
+A identidade de combate deve surgir de:
+
+* equipamentos;
+* atributos;
+* classe;
+* habilidades futuras;
+* efeitos especiais;
+* Build Score.
+
+---
+
+## Loadout
+
+Representa a configuração equipada do herói.
+
+Responsabilidades:
+
+* armazenar itens equipados;
+* validar slots;
+* permitir comparação;
+* apoiar cálculo de Power e Build Score.
+
+Slots planejados:
+
+```text
+weapon
+offhand
+helmet
+chest
+gloves
+belt
+boots
+ring_1
+ring_2
+amulet
+```
+
+---
+
+## ItemInstance
+
+Representa um item gerado e persistente.
+
+Responsabilidades:
+
+* manter atributos gerados;
+* manter raridade;
+* manter afixos;
+* manter origem;
+* manter tags;
+* permitir comparação.
+
+Não deve conter regra de geração.
+
+A geração pertence ao `LootSystem`.
+
+---
+
+## MonsterInstance
+
+Representa um inimigo em combate.
+
+Responsabilidades:
+
+* vida atual;
+* atributos efetivos;
+* categoria;
+* modificadores;
+* referência à definição base.
+
+Monstros comuns são temporários.
+
+Chefes derrotados devem ser registrados no progresso do mundo.
+
+---
+
+## CampaignProgress
+
+Representa o avanço do jogador na campanha.
+
+Responsabilidades:
+
+* ato atual;
+* mapa atual;
+* dificuldade atual;
+* mapas desbloqueados;
+* atos desbloqueados;
+* chefes derrotados;
+* dificuldades desbloqueadas.
+
+---
+
+## Wallet
+
+Representa a economia do jogador.
+
+Responsabilidades:
+
+* armazenar ouro;
+* receber créditos;
+* validar gastos futuros;
+* impedir saldo negativo.
+
+---
+
+# Definições de Conteúdo
+
+Definições são dados imutáveis do jogo.
+
+Não devem ser salvas integralmente no save.
+
+O save armazena apenas identificadores.
+
+---
+
+## WorldDefinition
+
+Agrupa atos, mapas e dificuldades disponíveis.
+
+---
+
+## ActDefinition
+
+Define um ato:
+
+```text
+act_id
+name
+theme
+map_ids
+final_boss_id
+next_act_id
+```
+
+---
+
+## MapDefinition
+
+Define um mapa:
+
+```text
+map_id
+act_id
+name
+order
+recommended_level
+monster_pool
+boss_id
+loot_context_id
+visual_kit_id
+```
+
+---
+
+## DifficultyDefinition
+
+Define uma dificuldade:
+
+```text
+difficulty_id
+name
+unlock_requirement
+monster_hp_multiplier
+monster_damage_multiplier
+xp_multiplier
+gold_multiplier
+loot_quality_multiplier
+```
+
+---
+
+## MonsterDefinition
+
+Define o modelo base de um monstro:
+
+```text
+monster_definition_id
+name
+category
+archetype
+base_stats
+skills
+loot_table_id
+visual_reference
+```
+
+---
+
+## ItemBaseDefinition
+
+Define o tipo base de item:
+
+```text
+base_item_id
+name
+slot
+weapon_type
+armor_type
+base_tags
+allowed_classes
+visual_reference
+```
+
+---
+
+# Sistemas de Aplicação
+
+## GameSession
+
+Orquestrador principal.
+
+Responsabilidades:
+
+* manter o `GameState` carregado;
+* receber comandos;
+* executar ticks;
+* chamar sistemas na ordem correta;
+* publicar eventos;
+* expor view state;
+* sinalizar necessidade de save.
+
+Substitui o papel central hoje dividido entre UI e CombatEngine.
+
+---
+
+## EncounterSystem
+
+Responsabilidades:
+
+* selecionar encontro adequado ao mapa;
+* criar `MonsterInstance`;
+* iniciar chefe quando necessário;
+* encerrar encontro atual;
+* preparar próximo encontro.
+
+Usa:
+
+* WorldDefinition;
+* MapDefinition;
+* MonsterDefinition;
+* RandomSource.
+
+---
+
+## CombatSystem
+
+Responsabilidades:
+
+* avançar combate;
+* calcular ataques;
+* aplicar dano;
+* detectar vitória;
+* detectar derrota;
+* emitir eventos de combate.
 
 Não deve:
 
-- acessar arquivos;
-- controlar timers;
-- criar widgets;
-- conter catálogos completos de conteúdo.
+* sortear loot;
+* conceder ouro;
+* avançar mapa;
+* salvar jogo;
+* criar o próximo inimigo sozinho.
 
-#### Hero
+---
 
-Entidade persistente que representa o aventureiro.
-
-Responsabilidades:
-
-- identidade, nível, experiência e vida atual;
-- referência à classe selecionada;
-- estratégia de combate ativa;
-- equipamentos por espaço;
-- progressão individual e estatísticas do herói.
-
-O herói não deve conhecer mapas, probabilidades de loot ou formato JSON.
-
-#### HeroClass
-
-Definição de classe. O estado atual usa uma identidade neutra de aventureiro; a
-Fase 2 introduzirá os arquétipos funcionais `Tank`, `Healer` e `DPS`. Nomes de
-fantasia podem ser adicionados depois como conteúdo, sem alterar o contrato.
+## RewardSystem
 
 Responsabilidades:
 
-- identidade da classe;
-- atributos base;
-- modificadores de crescimento;
-- referências a habilidades automáticas;
-- estatísticas secundárias futuras.
+* converter vitória em recompensa;
+* conceder XP;
+* conceder ouro;
+* solicitar drop ao LootSystem;
+* emitir eventos de recompensa.
 
-Classes devem ser definições de conteúdo ou estratégias de cálculo, não subclasses
-com cópias completas do comportamento de `Hero`.
+---
 
-#### RaceDefinition
-
-Definição futura de conteúdo para Humano, Elfo, Anão e Meio-Orc.
+## LootSystem
 
 Responsabilidades:
 
-- modificadores pequenos de atributos;
-- referência a uma passiva racial futura;
-- identidade visual;
-- identificador estável persistido pelo herói.
+* decidir se existe drop;
+* selecionar raridade;
+* selecionar item base;
+* calcular item level;
+* gerar `ItemInstance`;
+* aplicar contexto de mapa, dificuldade e monstro.
 
-Raças não devem criar subclasses de `Hero`.
+---
 
-#### CombatStrategy
-
-Objeto de valor que representa `AGGRESSIVE`, `BALANCED` ou `DEFENSIVE`.
-
-Responsabilidades:
-
-- fornecer modificadores de Ataque e Defesa;
-- permanecer independente da classe;
-- ser serializável por identificador estável.
-
-#### AttributeSet
-
-Objeto de valor para atributos calculados.
+## EquipmentSystem
 
 Responsabilidades:
 
-- agrupar Vida Máxima, Ataque e Defesa;
-- reservar extensão para Velocidade de Ataque, Crítico, Precisão, Esquiva e
-  Regeneração;
-- diferenciar atributos base de atributos efetivos.
+* validar equipamento;
+* comparar item atual e novo item;
+* calcular Power e Build Score;
+* aplicar auto-equip quando permitido;
+* respeitar item favorito ou bloqueado.
 
-O cálculo completo deve ser realizado por um serviço de domínio, preservando a
-ordem:
+---
 
-`base + progressão + classe + equipamento -> estratégia -> atributos efetivos`
-
-#### MonsterDefinition
-
-Definição imutável de um tipo de monstro.
+## ProgressionSystem
 
 Responsabilidades:
 
-- identificador, nome e perfil base;
-- valores de referência;
-- recompensas base;
-- tags de conteúdo e mapas permitidos.
+* aplicar XP;
+* processar level up;
+* avançar progresso de mapa;
+* concluir mapas;
+* concluir atos;
+* desbloquear dificuldades.
 
-Exemplos: Goblin, Lobo e Esqueleto.
+---
 
-#### MonsterInstance
-
-Entidade transitória de um encontro.
-
-Responsabilidades:
-
-- referência à definição;
-- nível ou faixa de poder gerada;
-- Vida Máxima e vida atual;
-- Ataque e demais atributos efetivos;
-- recompensa calculada;
-- indicação de monstro comum, elite ou chefe.
-
-#### BossDefinition
-
-Especialização de conteúdo para chefes.
+## EconomySystem
 
 Responsabilidades:
 
-- identidade própria;
-- ato e mapa associados;
-- modificadores de encontro;
-- recompensa especial;
-- condição de conclusão do ato.
+* creditar ouro;
+* validar gastos futuros;
+* registrar transações;
+* impedir saldo negativo.
 
-O combate deve operar sobre a mesma interface de participante usada por monstros
-comuns, evitando um segundo motor exclusivo para chefes.
+---
 
-#### ItemBase
-
-Definição imutável de uma família de item.
+## AttributeSystem
 
 Responsabilidades:
 
-- identificador e nome;
-- espaço de equipamento;
-- atributo principal;
-- faixa base de Poder;
-- identidade visual e restrições futuras.
+* calcular atributos totais do herói;
+* aplicar classe;
+* aplicar equipamentos;
+* aplicar bônus futuros;
+* gerar atributos derivados.
 
-#### ItemInstance
+Não deve aplicar estratégia de combate.
 
-Entidade persistente de um item gerado.
+---
 
-Responsabilidades:
+## ClassSystem
 
-- identificador único;
-- referência ao `ItemBase`;
-- raridade;
-- Poder;
-- nível do item;
-- bônus primário;
-- bônus secundários opcionais;
-- origem do drop.
-
-#### ItemOrigin
-
-Objeto de valor que registra:
-
-- dificuldade;
-- ato;
-- mapa;
-- monstro ou chefe;
-- nível de referência.
-
-Permite auditoria de balanceamento sem acoplar o item ao estado atual da campanha.
-
-#### CampaignProgress
-
-Entidade persistente da campanha.
+Sistema futuro.
 
 Responsabilidades:
 
-- dificuldade atual e maior dificuldade desbloqueada;
-- ato e mapa atuais;
-- progresso dentro do mapa;
-- atos e chefes concluídos;
-- marcos e desbloqueios.
+* resolver `class_id`;
+* aplicar crescimento;
+* fornecer habilidades automáticas;
+* validar restrições futuras de equipamento.
 
-#### CompanionState
+---
 
-Estado futuro de um NPC de grupo.
-
-Responsabilidades:
-
-- referência à definição do companheiro;
-- nível sincronizado;
-- classe ou função;
-- equipamentos;
-- configuração automática.
-
-O grupo deve reutilizar participantes, atributos, equipamentos e eventos do
-combate existente.
-
-#### DungeonRun
-
-Estado transitório ou persistente futuro de uma dungeon.
+## SaveCoordinator
 
 Responsabilidades:
 
-- dungeon e andar atuais;
-- chefes intermediário e final;
-- participantes;
-- recompensas ainda não consolidadas;
-- retomada da execução, caso aprovada.
+* observar eventos importantes;
+* decidir quando salvar;
+* solicitar save ao repositório;
+* executar autosave periódico;
+* impedir que a UI conheça detalhes de persistência.
 
-#### WorldDefinition
+---
 
-Raiz imutável do conteúdo de campanha.
+# Portas Técnicas
 
-Responsabilidades:
+## GameStateRepository
 
-- reunir dificuldades, atos e mapas disponíveis;
-- resolver referências de conteúdo;
-- validar a sequência da campanha.
+Contrato de persistência.
 
-Não faz parte do save. O save armazena identificadores e progresso.
+Operações:
 
-#### ActDefinition
+```text
+load() -> GameState
+save(GameState)
+```
 
-Definição imutável de um ato:
+Implementação inicial:
 
-- identificador, nome e tema;
-- sequência de mapas;
-- chefe de encerramento;
-- próximo ato.
+```text
+JsonGameStateRepository
+```
 
-#### MapDefinition
+---
 
-Definição imutável de um mapa:
+## ContentRepository
 
-- identificador e posição;
-- meta de vitórias;
-- conjunto de monstros;
-- faixas de desafio e recompensa;
-- chefe opcional;
-- próximo mapa.
+Contrato de conteúdo.
 
-#### DifficultyDefinition
+Responsável por carregar:
 
-Definição imutável de uma dificuldade:
+* mundo;
+* atos;
+* mapas;
+* monstros;
+* chefes;
+* itens;
+* classes;
+* dificuldades.
 
-- identificador e ordem;
-- modificadores de inimigos;
-- modificadores de experiência, ouro e Poder;
-- requisitos de desbloqueio.
+No início, o conteúdo pode continuar em módulos Python.
 
-#### Wallet
+A arquitetura deve permitir migração futura para JSON.
 
-Objeto persistente da economia do jogador.
+---
 
-Responsabilidades:
+## RandomSource
 
-- armazenar o saldo de ouro;
-- aceitar créditos e débitos válidos;
-- impedir saldo negativo quando gastos forem introduzidos.
-
-Na v0.1, apenas créditos são utilizados.
-
-#### GameStatistics
-
-Entidade persistente para contadores e marcos mensuráveis.
-
-Exemplos:
-
-- inimigos derrotados;
-- mortes;
-- chefes derrotados;
-- ouro total obtido;
-- itens por raridade;
-- maior Poder encontrado.
-
-### 2. Sistemas do Jogo
-
-Sistemas são serviços de aplicação. Eles coordenam entidades e serviços de
-domínio, mas não contêm apresentação nem acesso direto a arquivos.
-
-#### GameSession
-
-Orquestrador principal da sessão.
-
-Responsabilidades:
-
-- possuir o `GameState` carregado;
-- receber comandos da interface;
-- executar ticks;
-- coordenar sistemas na ordem correta;
-- publicar eventos;
-- expor um estado de leitura para a UI;
-- sinalizar quando o estado precisa ser salvo.
-
-Substitui o papel central hoje dividido entre `MainWindow` e `CombatEngine`.
-
-#### CombatSystem
-
-Responsabilidades:
-
-- controlar turnos ou cadência do encontro;
-- calcular ataques por meio de serviços de domínio;
-- aplicar dano;
-- detectar vitória e derrota;
-- emitir eventos de combate.
-
-Não deve:
-
-- sortear loot;
-- conceder ouro;
-- avançar mapas;
-- salvar o jogo;
-- criar o próximo inimigo por conta própria.
-
-#### EncounterSystem
-
-Responsabilidades:
-
-- iniciar o encontro apropriado para o mapa;
-- selecionar uma definição permitida;
-- criar `MonsterInstance`;
-- criar o chefe quando a condição do mapa for atendida;
-- encerrar e substituir encontros.
-
-#### RewardSystem
-
-Responsabilidades:
-
-- converter uma vitória em experiência e ouro;
-- solicitar uma rolagem ao `LootSystem`;
-- aplicar recompensas ao `GameState`;
-- emitir eventos de recompensa.
-
-#### LootSystem
-
-Responsabilidades:
-
-- decidir se existe drop;
-- selecionar raridade e `ItemBase`;
-- calcular nível de referência e faixa de Poder;
-- criar `ItemInstance` com origem;
-- delegar fórmulas ao serviço de balanceamento.
-
-#### EquipmentSystem
-
-Responsabilidades:
-
-- comparar itens do mesmo espaço;
-- aplicar critérios de desempate;
-- equipar automaticamente a melhoria;
-- emitir resultado de equipamento ou descarte.
-
-#### ProgressionSystem
-
-Responsabilidades:
-
-- aplicar experiência e level up;
-- avançar progresso do mapa;
-- concluir mapas e atos;
-- desbloquear dificuldades;
-- registrar marcos.
-
-As regras detalhadas continuam pertencendo aos documentos de progressão.
-
-#### EconomySystem
-
-Responsabilidades:
-
-- creditar ouro;
-- futuramente validar gastos e serviços;
-- registrar transações como eventos.
-
-O `Wallet` mantém o saldo; o sistema executa os casos de uso.
-
-#### StrategySystem
-
-Responsabilidades:
-
-- validar comandos de troca de estratégia;
-- atualizar a estratégia persistente do herói;
-- emitir evento de alteração;
-- não interromper o encontro.
-
-#### AttributeSystem
-
-Serviço de domínio responsável por:
-
-- calcular atributos totais do herói;
-- aplicar classe, nível, equipamentos e estratégia na ordem definida;
-- calcular atributos efetivos de monstros;
-- preparar suporte a estatísticas secundárias.
-
-#### ClassSystem
-
-Integração futura responsável por:
-
-- resolver a definição da classe;
-- aplicar crescimento e modificadores;
-- fornecer habilidades automáticas;
-- validar equipamentos restritos, caso existam no futuro.
-
-#### MilestoneSystem
-
-Responsabilidades:
-
-- observar eventos relevantes;
-- registrar cada marco uma única vez;
-- emitir eventos de conquista.
-
-#### SaveCoordinator
-
-Serviço de aplicação que decide quando persistir.
-
-Responsabilidades:
-
-- reagir a eventos importantes;
-- executar autosave periódico;
-- solicitar persistência ao repositório;
-- evitar que a UI conheça detalhes de arquivo.
-
-### 3. Serviços de Domínio e Portas
-
-#### BalanceService
-
-Interface para cálculos centralizados:
-
-- atributos de inimigos;
-- XP;
-- ouro;
-- Poder;
-- conversão de Poder em atributos;
-- modificadores de mapa, ato e dificuldade.
-
-As fórmulas pertencem a
-[Fórmulas de balanceamento](03_BALANCE_FORMULAS.md).
-
-#### RandomSource
-
-Porta para aleatoriedade.
+Porta de aleatoriedade.
 
 Usada por:
 
-- seleção de monstro;
-- raridade;
-- item base;
-- variação de Poder.
+* seleção de monstro;
+* drop;
+* raridade;
+* item base;
+* variação de atributos.
 
-Deve permitir semente controlada em testes.
+Deve permitir seed controlada em testes.
 
-#### GameStateRepository
+---
 
-Porta de persistência:
+## Clock
 
-- `load() -> GameState`;
-- `save(GameState)`;
-- suporte futuro a migração e recuperação.
+Porta de tempo.
 
-#### ContentRepository
+Usada por:
 
-Porta de carregamento de definições:
+* ticks;
+* autosave;
+* cooldowns futuros;
+* sistema de sessão;
+* sistema diário.
 
-- mundo;
-- mapas;
-- monstros;
-- itens;
-- classes;
-- dificuldades.
+O domínio não deve chamar APIs de tempo diretamente.
 
-No início, o conteúdo pode continuar em módulos Python. A arquitetura deve
-permitir migração posterior para JSON ou outro formato declarativo sem alterar os
-sistemas.
+---
 
-#### Clock
+## BalanceService
 
-Porta de tempo para:
+Interface para cálculos centralizados.
 
-- tick da sessão;
-- autosave;
-- habilidades futuras;
-- sistemas de Taskbar futuros.
+Responsável por:
 
-O domínio não deve chamar APIs de relógio diretamente.
+* HP;
+* Attack;
+* Defense;
+* XP;
+* Gold;
+* Power;
+* Build Score;
+* scaling por mapa;
+* scaling por ato;
+* scaling por dificuldade.
 
-### 4. Eventos e Comandos
+As fórmulas pertencem ao documento de Balanceamento.
 
-#### Comandos
+---
 
-Representam intenção externa.
+# Comandos
+
+Comandos representam intenção externa.
 
 Comandos iniciais:
 
-- `StartSession`;
-- `AdvanceTick`;
-- `ChangeCombatStrategy`;
-- `CloseSession`.
+```text
+StartSession
+AdvanceTick
+CloseSession
+EquipItem
+SellItem
+```
 
 Comandos futuros:
 
-- `SelectClass`;
-- `PurchaseService`;
-- `ResolveRandomEvent`.
-
-#### Eventos
-
-Representam fatos já ocorridos.
-
-Categorias iniciais:
-
-- combate: ataque, dano, vitória e derrota;
-- progressão: XP, level up, mapa e ato concluídos;
-- recompensa: ouro, drop, item equipado ou descartado;
-- campanha: chefe derrotado e dificuldade desbloqueada;
-- configuração: estratégia alterada;
-- persistência: save concluído ou falhou.
-
-Eventos devem transportar dados estruturados. Texto para o log deve ser montado
-pela apresentação, permitindo localização e interfaces futuras.
-
-Não é obrigatório implementar um barramento global de eventos. Uma lista
-ordenada retornada por cada comando é suficiente para a v0.1.
-
-### 5. Fluxo de Dados
-
-#### Inicialização
-
-```mermaid
-sequenceDiagram
-    participant Main
-    participant Content as ContentRepository
-    participant Save as GameStateRepository
-    participant Session as GameSession
-    participant UI
-
-    Main->>Content: carregar definições
-    Main->>Save: carregar GameState
-    Save-->>Main: estado ou estado padrão migrado
-    Main->>Session: criar estado + sistemas + conteúdo
-    Main->>UI: criar UI com GameSession
-    UI->>Session: StartSession
-    Session-->>UI: eventos + view state
+```text
+SelectClass
+SelectRace
+ToggleSkillAutocast
+EnterDungeon
+ExitDungeon
+ClaimDailyReward
 ```
 
-#### Tick de Combate
+Comandos removidos:
 
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Session as GameSession
-    participant Combat as CombatSystem
-    participant Attributes as AttributeSystem
-
-    UI->>Session: AdvanceTick
-    Session->>Combat: avançar encontro
-    Combat->>Attributes: obter atributos efetivos
-    Attributes-->>Combat: ataque e defesa
-    Combat-->>Session: eventos de combate
-    Session-->>UI: eventos + view state
+```text
+ChangeCombatStrategy
 ```
 
-#### Vitória e Recompensas
+Motivo:
 
-```mermaid
-sequenceDiagram
-    participant Session as GameSession
-    participant Combat as CombatSystem
-    participant Rewards as RewardSystem
-    participant Loot as LootSystem
-    participant Equipment as EquipmentSystem
-    participant Progression as ProgressionSystem
-    participant Encounter as EncounterSystem
+O projeto não utiliza mais modos de combate selecionáveis.
 
-    Combat-->>Session: EnemyDefeated
-    Session->>Rewards: conceder recompensa
-    Rewards->>Loot: gerar drop
-    Loot-->>Rewards: ItemInstance opcional
-    Rewards->>Equipment: avaliar item
-    Session->>Progression: aplicar XP e progresso do mapa
-    Session->>Encounter: iniciar próximo encontro ou chefe
+---
+
+# Eventos
+
+Eventos representam fatos ocorridos.
+
+Categorias:
+
+## Combate
+
+```text
+EncounterStarted
+HeroAttacked
+MonsterAttacked
+DamageApplied
+MonsterDefeated
+HeroDefeated
 ```
 
-#### Troca de Estratégia
+## Recompensa
 
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Session as GameSession
-    participant Strategy as StrategySystem
-
-    UI->>Session: ChangeCombatStrategy
-    Session->>Strategy: validar e aplicar
-    Strategy-->>Session: StrategyChanged
-    Session-->>UI: evento + estado atualizado
+```text
+GoldGranted
+XpGranted
+ItemDropped
+ItemEquipped
+ItemDiscarded
 ```
 
-#### Persistência
+## Progressão
 
-```mermaid
-flowchart LR
-    EVENT["Evento importante ou autosave"]
-    COORD["SaveCoordinator"]
-    STATE["GameState"]
-    REPO["GameStateRepository"]
-    FILE["save.json"]
-
-    EVENT --> COORD
-    COORD --> STATE
-    COORD --> REPO
-    REPO --> FILE
+```text
+HeroLeveledUp
+MapCompleted
+ActCompleted
+DifficultyUnlocked
+BossDefeated
 ```
 
-### 6. Responsabilidades por Camada
+## Save
 
-#### Domínio
+```text
+SaveRequested
+SaveCompleted
+SaveFailed
+```
 
-Pode depender apenas da biblioteca padrão e de outros módulos do domínio.
+## Companion
 
-Contém:
+```text
+CompanionMessageQueued
+MoraleChanged
+```
 
-- entidades;
-- objetos de valor;
-- regras puras;
-- eventos de domínio;
-- interfaces de cálculo quando necessário.
+Eventos devem carregar dados estruturados.
 
-Não contém:
+A UI transforma eventos em texto.
 
-- CustomTkinter;
-- caminhos de arquivo;
-- JSON;
-- timers de interface;
-- texto formatado para o usuário.
+O domínio não deve gerar frases prontas para o usuário.
 
-#### Aplicação
+---
 
-Depende do domínio e de portas.
+# View State
 
-Contém:
+A aplicação deve expor um modelo de leitura para a UI.
 
-- `GameSession`;
-- sistemas;
-- comandos;
-- coordenação de casos de uso;
-- modelos de leitura para a UI.
+Esse modelo não é persistido.
 
-Não contém:
+Deve conter:
 
-- widgets;
-- detalhes de JSON;
-- catálogos hardcoded de conteúdo.
+* herói;
+* HP;
+* XP;
+* nível;
+* ouro;
+* mapa atual;
+* ato atual;
+* dificuldade;
+* inimigo atual;
+* estado do encontro;
+* equipamentos;
+* eventos recentes;
+* Power;
+* Build Score.
 
-#### Infraestrutura
+A UI lê o View State.
 
-Implementa portas definidas pelas camadas internas.
+A UI não calcula regra de jogo.
 
-Contém:
+---
 
-- repositório JSON;
-- carregadores de conteúdo;
-- fonte de aleatoriedade;
-- relógio;
-- migrações de save;
-- logging técnico.
+# Fluxo Principal
 
-#### Apresentação
+## Inicialização
 
-Depende da aplicação.
+```text
+main
+↓
+bootstrap
+↓
+carregar conteúdo
+↓
+carregar GameState
+↓
+aplicar migrações
+↓
+criar GameSession
+↓
+criar UI
+↓
+StartSession
+```
 
-Contém:
+---
 
-- janela CustomTkinter;
-- componentes visuais;
-- agendamento do próximo tick;
-- tradução de eventos em mensagens;
-- comandos de estratégia;
-- tratamento visual de erros.
+## Tick
 
-A UI pode iniciar o tick por `after`, mas apenas chama `GameSession`. Ela não
-executa regras.
+```text
+UI chama AdvanceTick
+↓
+GameSession recebe comando
+↓
+EncounterSystem garante encontro ativo
+↓
+CombatSystem avança combate
+↓
+RewardSystem processa vitória, se existir
+↓
+ProgressionSystem aplica progresso
+↓
+SaveCoordinator avalia persistência
+↓
+GameSession retorna eventos + view state
+↓
+UI apresenta
+```
 
-### 7. Responsabilidades dos Módulos Futuros
+---
 
-| Módulo | Responsabilidade |
-|---|---|
-| `domain.hero` | Herói, classe, estratégia, atributos e equipamento |
-| `domain.combat` | Participantes, encontro, dano e eventos de combate |
-| `domain.world` | Campanha, mapas, atos, dificuldades e progresso |
-| `domain.monsters` | Definições e instâncias de monstros e chefes |
-| `domain.items` | Bases, instâncias, raridades, espaços e origem |
-| `domain.economy` | Carteira e transações |
-| `application.session` | Coordenação do ciclo completo |
-| `application.systems` | Sistemas de combate, recompensa e progressão |
-| `application.commands` | Intenções recebidas da apresentação |
-| `application.events` | Fatos estruturados emitidos pelos sistemas |
-| `application.views` | Estado de leitura preparado para a UI |
-| `infrastructure.persistence` | JSON, migrações e atomicidade |
-| `infrastructure.content` | Catálogos e validação de definições |
-| `infrastructure.random` | Aleatoriedade real e determinística |
-| `infrastructure.time` | Relógio da aplicação |
-| `presentation.taskbar` | Janela, componentes e presenters |
-| `bootstrap` | Composição das dependências e início do aplicativo |
+## Vitória
 
-### 8. Estrutura Futura de Classes Python
+```text
+MonsterDefeated
+↓
+RewardSystem
+↓
+LootSystem
+↓
+EquipmentSystem
+↓
+ProgressionSystem
+↓
+EncounterSystem prepara próximo encontro
+↓
+SaveCoordinator marca save
+```
 
-Estrutura de referência:
+---
+
+## Persistência
+
+```text
+Evento importante ou autosave
+↓
+SaveCoordinator
+↓
+GameStateRepository
+↓
+save temporário
+↓
+validação
+↓
+save principal
+↓
+backup
+```
+
+---
+
+# Estrutura Futura de Pastas
+
+Direção recomendada:
 
 ```text
 src/
 ├── main.py
 ├── bootstrap.py
 ├── domain/
+│   ├── game_state.py
 │   ├── hero/
 │   │   ├── hero.py
-│   │   ├── hero_class.py
-│   │   ├── combat_strategy.py
 │   │   ├── attributes.py
-│   │   └── equipment.py
+│   │   ├── hero_class.py
+│   │   ├── race.py
+│   │   └── loadout.py
 │   ├── combat/
 │   │   ├── combatant.py
 │   │   ├── encounter.py
 │   │   ├── damage.py
 │   │   └── events.py
+│   ├── items/
+│   │   ├── item_base.py
+│   │   ├── item_instance.py
+│   │   ├── item_slot.py
+│   │   ├── rarity.py
+│   │   └── affix.py
 │   ├── monsters/
 │   │   ├── monster_definition.py
 │   │   ├── monster_instance.py
@@ -828,16 +1029,9 @@ src/
 │   │   ├── act_definition.py
 │   │   ├── map_definition.py
 │   │   └── difficulty_definition.py
-│   ├── items/
-│   │   ├── item_base.py
-│   │   ├── item_instance.py
-│   │   ├── item_origin.py
-│   │   ├── rarity.py
-│   │   └── item_slot.py
-│   ├── economy/
-│   │   ├── wallet.py
-│   │   └── transaction.py
-│   └── game_state.py
+│   └── economy/
+│       ├── wallet.py
+│       └── transaction.py
 ├── application/
 │   ├── game_session.py
 │   ├── commands.py
@@ -847,19 +1041,18 @@ src/
 │   │   ├── game_state_repository.py
 │   │   ├── content_repository.py
 │   │   ├── random_source.py
-│   │   └── clock.py
+│   │   ├── clock.py
+│   │   └── balance_service.py
 │   └── systems/
-│       ├── combat_system.py
 │       ├── encounter_system.py
+│       ├── combat_system.py
 │       ├── reward_system.py
 │       ├── loot_system.py
 │       ├── equipment_system.py
 │       ├── progression_system.py
 │       ├── economy_system.py
-│       ├── strategy_system.py
 │       ├── attribute_system.py
 │       ├── class_system.py
-│       ├── milestone_system.py
 │       └── save_coordinator.py
 ├── infrastructure/
 │   ├── persistence/
@@ -882,185 +1075,214 @@ src/
         └── components/
 ```
 
-Essa árvore é uma direção, não uma exigência de criar um arquivo para cada classe
-imediatamente. Módulos pequenos podem permanecer agrupados até existir complexidade
-real.
+Essa estrutura é direção, não obrigação imediata.
 
-### 9. Classes e Interfaces Principais
+Não criar arquivos vazios apenas para cumprir a árvore.
 
-| Classe ou interface | Camada | Papel |
-|---|---|---|
-| `GameState` | Domínio | Estado persistente completo |
-| `Hero` | Domínio | Entidade do aventureiro |
-| `HeroClass` | Domínio | Definição de classe |
-| `CombatStrategy` | Domínio | Postura persistente |
-| `CampaignProgress` | Domínio | Posição e desbloqueios |
-| `MonsterDefinition` | Domínio | Conteúdo base de monstro |
-| `MonsterInstance` | Domínio | Estado do inimigo atual |
-| `ItemBase` | Domínio | Família de equipamento |
-| `ItemInstance` | Domínio | Item gerado e persistente |
-| `Wallet` | Domínio | Saldo de ouro |
-| `GameSession` | Aplicação | Orquestra comandos e sistemas |
-| `CombatSystem` | Aplicação | Resolve combate |
-| `ProgressionSystem` | Aplicação | Resolve avanço |
-| `LootSystem` | Aplicação | Gera itens escaláveis |
-| `RewardSystem` | Aplicação | Distribui recompensas |
-| `GameStateRepository` | Porta | Contrato de persistência |
-| `ContentRepository` | Porta | Contrato de conteúdo |
-| `JsonGameStateRepository` | Infraestrutura | Persistência em JSON |
-| `MainWindow` | Apresentação | Interface de Taskbar |
+---
 
-### 10. Mapeamento da Implementação Atual
+# Mapeamento da Implementação Atual
 
-| Atual | Destino futuro | Observação |
-|---|---|---|
-| `hero.hero.Hero` | `domain.hero.Hero` | Remover serialização e delegar cálculos compostos |
-| `enemies.enemies.Enemy` | `MonsterInstance` | Separar definição de instância |
-| `generate_enemy` | `EncounterSystem` + `ContentRepository` | Usar mapa, ato e dificuldade |
-| `items.items.Item` | `ItemBase` + `ItemInstance` | Adicionar Poder, origem e identificador |
-| `LOOT_TABLE` | `ContentRepository` | Separar catálogo da regra de drop |
-| `roll_loot` | `LootSystem` | Receber contexto de campanha |
-| `combat.CombatEngine` | `CombatSystem` + sistemas de aplicação | Separar combate, recompensa e progressão |
-| `CombatEvent` | eventos estruturados de aplicação | Remover texto pronto do domínio |
-| `save.SaveManager` | `JsonGameStateRepository` | Persistir `GameState` versionado |
-| `ui.MainWindow` | apresentação + presenter | Remover regras e decisão de save |
-| `main.main` | `bootstrap` | Compor dependências explicitamente |
+| Atual            | Destino Futuro              | Observação                           |
+| ---------------- | --------------------------- | ------------------------------------ |
+| `hero.Hero`      | `domain.hero.Hero`          | Remover serialização direta          |
+| `enemies.Enemy`  | `MonsterInstance`           | Separar definição e instância        |
+| `generate_enemy` | `EncounterSystem`           | Usar mapa, ato e dificuldade         |
+| `items.Item`     | `ItemBase` + `ItemInstance` | Separar base e item gerado           |
+| `LOOT_TABLE`     | `ContentRepository`         | Catálogo fora da regra               |
+| `roll_loot`      | `LootSystem`                | Receber contexto                     |
+| `CombatEngine`   | `CombatSystem` + sistemas   | Separar combate, reward e progressão |
+| `SaveManager`    | `JsonGameStateRepository`   | Persistir GameState versionado       |
+| `MainWindow`     | Presentation + Presenter    | UI não decide regra                  |
+| `main.py`        | `bootstrap.py` + `main.py`  | Compor dependências                  |
 
-### 11. Ordem Recomendada de Migração
+---
 
-1. Introduzir `GameState` e `CampaignProgress` sem alterar o loop visível.
-2. Mover serialização para mappers e persistir um save versionado.
-3. Separar `MonsterDefinition` de `MonsterInstance`.
-4. Extrair recompensas e progressão do `CombatEngine`.
-5. Introduzir mapas, atos e dificuldade Normal no `EncounterSystem`.
-6. Introduzir `Wallet` e recompensas de ouro.
-7. Introduzir `CombatStrategy` e `AttributeSystem`.
-8. Substituir itens fixos por `ItemBase` e `ItemInstance`.
-9. Preparar `HeroClass` com a definição neutra `Adventurer`.
-10. Adaptar a UI para consumir eventos e modelos de leitura.
+# Ordem Recomendada de Migração
 
-Cada etapa deve preservar um jogo executável e permitir migração de saves.
+1. Introduzir `GameState`.
+2. Introduzir `WorldProgress`.
+3. Centralizar save em repositório versionado.
+4. Separar `MonsterDefinition` de `MonsterInstance`.
+5. Extrair recompensa do `CombatEngine`.
+6. Extrair progressão do `CombatEngine`.
+7. Criar `EncounterSystem`.
+8. Criar `Wallet`.
+9. Separar `ItemBase` de `ItemInstance`.
+10. Criar `LootSystem`.
+11. Criar `EquipmentSystem`.
+12. Introduzir atributos STR, DEX, INT e CON.
+13. Introduzir `class_id` e `race_id` com defaults.
+14. Adaptar UI para consumir eventos e View State.
 
-### 12. Testabilidade
+Cada etapa deve manter o jogo executável.
 
-O domínio e os sistemas devem funcionar sem CustomTkinter.
+---
+
+# Testabilidade
+
+O domínio e a aplicação devem funcionar sem interface gráfica.
 
 Testes prioritários:
 
-- progressão de mapa e ato;
-- desbloqueio de dificuldade;
-- aplicação de estratégia;
-- recompensas de XP e ouro;
-- geração de Poder dentro da faixa;
-- equipamento automático;
-- encontros de chefe;
-- round-trip de `GameState`;
-- migração de saves antigos;
-- resultados determinísticos com `RandomSource` controlado.
+* carregar save antigo;
+* migrar save;
+* salvar e carregar `GameState`;
+* gerar encontro por mapa;
+* resolver combate;
+* conceder XP;
+* conceder ouro;
+* gerar loot;
+* equipar item;
+* avançar mapa;
+* derrotar chefe;
+* desbloquear ato;
+* desbloquear dificuldade;
+* simular resultado com RandomSource controlado.
 
-### 13. Decisões de Escopo
+---
 
-- Não usar banco de dados na v0.1.
-- Não exigir framework de injeção de dependência.
-- Não criar um barramento global de eventos.
-- Não adotar herança profunda para classes ou monstros.
-- Não persistir catálogos de conteúdo dentro do save.
-- Não criar um sistema genérico de componentes de entidade.
-- Não dividir arquivos apenas para reproduzir a árvore proposta.
+# Regras de Dependência
 
-Composição explícita, dataclasses, enums, protocolos e serviços pequenos são
-suficientes para a escala inicial.
+* Apresentação depende da Aplicação.
+* Aplicação depende do Domínio e das Portas.
+* Infraestrutura implementa Portas.
+* Domínio não depende de UI.
+* Domínio não depende de Infraestrutura.
+* Nenhuma entidade lê ou grava arquivo.
+* Nenhum widget decide regra de jogo.
+* Nenhuma fórmula fica escondida na UI.
 
-## Regras
+---
 
-### Direção de Dependências
+# Fonte de Verdade
 
-- apresentação depende de aplicação;
-- aplicação depende de domínio e portas;
-- infraestrutura implementa portas;
-- domínio não depende de apresentação ou infraestrutura;
-- conteúdo referencia identificadores de domínio;
-- nenhuma entidade grava ou lê arquivos.
+| Tipo               | Fonte                     |
+| ------------------ | ------------------------- |
+| Regras de produto  | Documentos de domínio     |
+| Fórmulas           | Fórmulas de Balanceamento |
+| Contratos de dados | Modelo de Dados           |
+| Persistência       | Sistema de Save           |
+| Estrutura técnica  | Arquitetura Técnica       |
+| Conteúdo           | Repositório de conteúdo   |
 
-### Fonte de Verdade
+---
 
-- regras de produto permanecem nos documentos de domínio;
-- fórmulas permanecem em
-  [Fórmulas de balanceamento](03_BALANCE_FORMULAS.md);
-- contratos de dados permanecem em
-  [Modelo de dados](02_DATA_MODEL.md);
-- este documento define limites técnicos e colaboração entre módulos.
+# Estado e Conteúdo
 
-### Estado e Conteúdo
+## Estado
 
-- estado mutável pertence a `GameState` e entidades de runtime;
-- definições de conteúdo são imutáveis;
-- saves armazenam estado e identificadores;
-- conteúdo é carregado separadamente e validado na inicialização.
+Mutável e persistente.
 
-### Compatibilidade
+Exemplos:
 
-- identificadores persistidos devem ser estáveis;
-- novos campos de save precisam de defaults ou migração;
-- eventos e modelos de leitura podem evoluir sem alterar entidades salvas;
-- classes futuras devem estender dados e regras, não substituir o herói.
+* Hero;
+* Inventory;
+* Equipment;
+* WorldProgress;
+* Wallet;
+* Statistics.
 
-## Dados
+---
 
-### Agregados Persistentes
+## Conteúdo
 
-| Agregado | Conteúdo |
-|---|---|
-| `GameState` | versão, herói, campanha, carteira e estatísticas |
-| `Hero` | progressão, estratégia, classe e equipamentos |
-| `CampaignProgress` | dificuldade, ato, mapa e desbloqueios |
-| `Wallet` | saldo de ouro |
-| `ItemInstance` | itens atualmente equipados |
+Imutável e carregado.
 
-### Conteúdo Não Persistente
+Exemplos:
 
-| Definição | Identificação |
-|---|---|
-| `WorldDefinition` | `world_id` |
-| `ActDefinition` | `act_id` |
-| `MapDefinition` | `map_id` |
-| `DifficultyDefinition` | `difficulty_id` |
-| `MonsterDefinition` | `monster_id` |
-| `BossDefinition` | `boss_id` |
-| `ItemBase` | `item_base_id` |
-| `HeroClass` | `class_id` |
+* mapas;
+* atos;
+* dificuldades;
+* monstros;
+* chefes;
+* itens base;
+* classes;
+* raças.
 
-### View State
+---
 
-A aplicação deve expor à UI um modelo de leitura contendo somente dados já
-preparados:
+# Compatibilidade
 
-- cabeçalho de campanha;
-- progresso do mapa;
-- herói e atributos efetivos;
-- estratégia ativa;
-- inimigo e vida;
-- XP;
-- ouro;
-- equipamentos;
-- estado do encontro;
-- eventos recentes.
+Toda mudança persistente exige:
 
-O modelo de leitura não é persistido.
+* default;
+* migração;
+* fallback seguro;
+* teste de save antigo.
 
-## Pendências
+Identificadores persistidos devem ser estáveis.
 
-- Aprovar se o encontro atual fará parte do save ou será sempre recriado.
-- Definir o esquema inicial de `GameState` em
-  [Modelo de dados](02_DATA_MODEL.md).
-- Definir identificadores estáveis para conteúdo.
-- Definir o formato inicial do `ContentRepository`.
-- Aprovar a ordem exata de sistemas após uma vitória.
-- Definir fórmulas e limites em
-  [Fórmulas de balanceamento](03_BALANCE_FORMULAS.md).
-- Planejar a migração do `save.json` atual.
+Não renomear IDs publicados sem migração.
 
-## Histórico de Alterações
+---
 
-- 2026-06-10: criada a arquitetura técnica inicial a partir do GDD refinado e da
-  implementação do protótipo.
+# Decisões de Escopo
+
+Não usar na fase atual:
+
+* banco de dados;
+* framework pesado de injeção de dependência;
+* barramento global obrigatório;
+* ECS genérico;
+* herança profunda;
+* cloud save;
+* multiplayer real;
+* persistência online.
+
+Dataclasses, protocolos, enums, serviços pequenos e composição explícita são suficientes.
+
+---
+
+# Fora do Escopo
+
+Este documento não define:
+
+* fórmulas finais;
+* valores de balanceamento;
+* conteúdo completo de mapas;
+* sprites;
+* animações;
+* tabelas finais de loot;
+* cloud save;
+* multiplayer;
+* anticheat.
+
+---
+
+# Critérios de Sucesso
+
+A arquitetura será considerada saudável quando:
+
+* o jogo continuar executável após cada migração;
+* a UI não decidir regras de gameplay;
+* o save persistir `GameState` versionado;
+* conteúdo e estado estiverem separados;
+* sistemas puderem ser testados sem CustomTkinter;
+* Codex conseguir implementar sem misturar responsabilidades;
+* novas fases puderem entrar sem quebrar o núcleo;
+* estratégia de combate legada estiver removida ou ignorada com segurança.
+
+---
+
+# Pendências
+
+* Definir esquema inicial final de `GameState`.
+* Definir formato oficial do `ContentRepository`.
+* Definir migração do save atual.
+* Definir se encontro atual será persistido ou recriado.
+* Definir sequência final dos sistemas após vitória.
+* Definir contratos técnicos de eventos.
+* Criar testes de round-trip do save.
+* Remover referências ativas a estratégia de combate.
+* Preparar defaults de `class_id`, `race_id` e atributos.
+
+---
+
+# Histórico de Alterações
+
+* 2026-06-10: criada arquitetura técnica inicial.
+* 2026-06-10: definida separação em Domínio, Aplicação, Infraestrutura e Apresentação.
+* 2026-06-10: `GameState` definido como agregado persistente principal.
+* 2026-06-10: removida estratégia de combate como sistema ativo.
+* 2026-06-10: adicionada direção de migração incremental.
