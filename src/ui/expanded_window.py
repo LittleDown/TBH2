@@ -8,9 +8,11 @@ import customtkinter as ctk
 from PIL import Image
 
 from game_state import GameState
+from hero.classes import class_display_name
 from items.items import Item
 from maps.campaign import ACT_NAME
 from maps.world import ACT_ONE_MAPS
+from ui.class_visuals import resolve_visual_asset
 from ui.presentation import (
     InventoryFilter,
     compare_item,
@@ -102,9 +104,13 @@ class ExpandedWindow(ctk.CTkToplevel):
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}+{x}+{y}")
 
     def _load_images(self) -> None:
-        asset_dir = Path(__file__).resolve().parents[1] / "assets" / "warrior"
-        path = asset_dir / "front.png"
-        if not path.exists():
+        asset_root = Path(__file__).resolve().parents[1] / "assets"
+        path = resolve_visual_asset(
+            asset_root,
+            self.hero.class_id,
+            "front",
+        )
+        if path is None:
             return
         with Image.open(path) as source:
             image = source.convert("RGBA").copy()
@@ -234,7 +240,7 @@ class ExpandedWindow(ctk.CTkToplevel):
 
         self.hero_art = ctk.CTkLabel(
             center,
-            text="AVENTUREIRO",
+            text=class_display_name(self.hero.class_id).upper(),
             image=self._hero_image,
             compound="top",
             font=ctk.CTkFont(family="Georgia", size=12, weight="bold"),
@@ -315,8 +321,8 @@ class ExpandedWindow(ctk.CTkToplevel):
                 "DEX  Indisponível\n"
                 "INT  Indisponível\n"
                 "CON  Indisponível\n\n"
-                "Classe e habilidades serão integradas\n"
-                "em versões futuras."
+                "Atributos primários e habilidades\n"
+                "serão integrados em versões futuras."
             ),
             justify="left",
             anchor="nw",
@@ -711,8 +717,15 @@ class ExpandedWindow(ctk.CTkToplevel):
 
     def _refresh_hero(self) -> None:
         hero = self.hero
+        self.hero_art.configure(
+            text=class_display_name(hero.class_id).upper()
+        )
         self.hero_title.configure(
-            text=f"{hero.name.upper()} · NÍVEL {hero.level}"
+            text=(
+                f"{hero.name.upper()} · "
+                f"{class_display_name(hero.class_id).upper()} · "
+                f"NÍVEL {hero.level}"
+            )
         )
         self.hero_power.configure(
             text=f"PODER {hero.power}  ·  BUILD SCORE {hero.build_score}"

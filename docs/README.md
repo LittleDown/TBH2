@@ -101,6 +101,7 @@ Permanece apenas para histórico.
 ## Sprints Ativas
 
 * [Sprint UX/UI 02 - Interface Taskbar Expandida](SPRINT_UX_UI_02.md)
+* [Sprint Tecnica - Class ID e Visual Mapping](SPRINT_TECH_CLASS_ID_VISUAL_MAPPING.md)
 
 ---
 

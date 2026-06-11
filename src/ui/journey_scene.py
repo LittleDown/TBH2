@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from math import pi, sin
 from random import Random
 
+from ui.class_visuals import (
+    AttackVisualAction,
+    VisualAction,
+    frame_names_for_action,
+)
+
 
 @dataclass
 class FloatingText:
@@ -46,11 +52,13 @@ class JourneySceneController:
         hero_home_x: float = 102.0,
         enemy_home_x: float = 270.0,
         rng: Random | None = None,
+        hero_attack_action: AttackVisualAction = "attack_melee",
     ) -> None:
         self.scene_width = scene_width
         self.hero_home_x = hero_home_x
         self.enemy_home_x = enemy_home_x
         self.rng = rng or Random()
+        self.hero_attack_action = hero_attack_action
 
         self.phase = "explore"
         self.phase_time = 0.0
@@ -58,7 +66,8 @@ class JourneySceneController:
         self.world_speed_factor = 1.0
         self.encounter_distance = 0.0
         self.enemy_x = scene_width + 50.0
-        self.hero_frame = "walk1"
+        self.hero_action: VisualAction = "walk"
+        self.hero_frame_index = 0
         self.enemy_visible = False
         self.enemy_dead = False
         self.enemy_death_progress = 0.0
@@ -75,6 +84,11 @@ class JourneySceneController:
         self.start_explore(resuming=False)
 
     @property
+    def hero_frame(self) -> str:
+        frames = frame_names_for_action(self.hero_action)
+        return frames[self.hero_frame_index % len(frames)]
+
+    @property
     def hero_x(self) -> float:
         if self.attack_kind == "hero_attack":
             progress = min(1.0, self.attack_time / self.ATTACK_DURATION)
@@ -85,7 +99,7 @@ class JourneySceneController:
     def hero_y_offset(self) -> float:
         if self.phase == "explore":
             return -2.0 if self.hero_frame == "walk1" else 0.0
-        if self.phase == "reward" and self.reward_text.startswith("DERROTA"):
+        if self.hero_action == "defeat":
             return 10.0
         return 0.0
 
@@ -143,6 +157,7 @@ class JourneySceneController:
         self.attack_kind = None
         self.hit_target = None
         self.hit_time = 0.0
+        self._set_hero_action("walk")
 
     def trigger_attack(self, kind: str, damage: int) -> None:
         if self.phase != "fight":
@@ -169,6 +184,7 @@ class JourneySceneController:
         self.attack_kind = None
         self.hit_target = None
         self.hit_time = 0.0
+        self._set_hero_action("victory")
 
     def show_defeat(self, text: str) -> None:
         self.phase = "reward"
@@ -178,6 +194,7 @@ class JourneySceneController:
         self.attack_kind = None
         self.hit_target = None
         self.hit_time = 0.0
+        self._set_hero_action("defeat")
 
     def update(self, dt: float) -> list[str]:
         dt = max(0.0, min(0.05, dt))
@@ -196,13 +213,13 @@ class JourneySceneController:
             self.background_scroll += distance
             self.encounter_distance -= distance
             frame_index = int(self.phase_time / self.WALK_FRAME_SECONDS) % 2
-            self.hero_frame = "walk1" if frame_index == 0 else "walk2"
+            self._set_hero_action("walk", frame_index)
             if self.encounter_distance <= 0:
                 self.phase = "encounter"
                 self.phase_time = 0.0
                 self.enemy_x = self.scene_width + 45.0
                 self.enemy_visible = True
-                self.hero_frame = "idle"
+                self._set_hero_action("idle")
                 events.append("encounter")
 
         elif self.phase == "encounter":
@@ -217,7 +234,7 @@ class JourneySceneController:
                 self.enemy_home_x,
                 self.enemy_x - self.ENEMY_APPROACH_SPEED * dt,
             )
-            self.hero_frame = "idle"
+            self._set_hero_action("idle")
             if (
                 self.enemy_x <= self.enemy_home_x
                 and self.world_speed_factor <= 0
@@ -225,15 +242,15 @@ class JourneySceneController:
                 self.phase = "fight"
                 self.phase_time = 0.0
                 self.world_speed_factor = 0.0
-                self.hero_frame = "idle"
+                self._set_hero_action("combat_idle")
                 events.append("fight")
 
         elif self.phase == "fight":
             if self.attack_kind is None:
                 if self.hit_target == "hero" and self.hit_time > 0:
-                    self.hero_frame = "hit"
+                    self._set_hero_action("hit")
                 else:
-                    self.hero_frame = "idle"
+                    self._set_hero_action("combat_idle")
 
         elif self.phase == "reward":
             if self.enemy_dead:
@@ -253,16 +270,17 @@ class JourneySceneController:
         if self.attack_kind is not None:
             self.attack_time += dt
             if self.attack_kind == "hero_attack":
-                self.hero_frame = (
-                    "attack1"
+                self._set_hero_action(
+                    self.hero_attack_action,
+                    0
                     if self.attack_time < self.ATTACK_HIT_TIME
-                    else "attack2"
+                    else 1,
                 )
             if self.attack_time >= self.ATTACK_DURATION:
                 self.attack_kind = None
                 self.attack_time = 0.0
                 if self.phase == "fight":
-                    self.hero_frame = "idle"
+                    self._set_hero_action("combat_idle")
 
         if self.hit_time > 0:
             self.hit_time = max(0.0, self.hit_time - dt)
@@ -273,6 +291,14 @@ class JourneySceneController:
             floater.life -= dt
             floater.y += floater.velocity_y * dt
         self.floaters = [floater for floater in self.floaters if floater.life > 0]
+
+    def _set_hero_action(
+        self,
+        action: VisualAction,
+        frame_index: int = 0,
+    ) -> None:
+        self.hero_action = action
+        self.hero_frame_index = frame_index
 
     def _update_ambient(self, dt: float) -> None:
         if (

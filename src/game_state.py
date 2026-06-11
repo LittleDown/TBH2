@@ -6,7 +6,7 @@ from typing import Any
 from hero.hero import Hero
 from maps.campaign import CampaignProgress
 
-SAVE_VERSION = 3
+SAVE_VERSION = 4
 
 
 @dataclass

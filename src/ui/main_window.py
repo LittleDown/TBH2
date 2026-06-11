@@ -13,6 +13,11 @@ from application.game_session import GameSession
 from application.save_coordinator import SaveCoordinator
 from game_state import GameState
 from save.save_manager import SaveManager
+from ui.class_visuals import (
+    RENDER_FRAME_NAMES,
+    resolve_visual_asset,
+    visual_profile_for,
+)
 from ui.expanded_window import ExpandedWindow
 from ui.journey_scene import JourneySceneController
 
@@ -62,7 +67,10 @@ class MainWindow(ctk.CTk):
         self.log_lines: deque[str] = deque(maxlen=1)
         self.nav_buttons: dict[str, ctk.CTkButton] = {}
         self.expanded_window: ExpandedWindow | None = None
-        self.journey = JourneySceneController()
+        visual_profile = visual_profile_for(self.hero.class_id)
+        self.journey = JourneySceneController(
+            hero_attack_action=visual_profile.attack_action
+        )
         self.last_frame_time = perf_counter()
         self.scene_map_index = -1
         self.road_parallax = self._create_road_parallax()
@@ -102,8 +110,8 @@ class MainWindow(ctk.CTk):
         self.geometry(f"{width}x{height}+{x}+{y}")
 
     def _load_sprites(self) -> dict[str, ctk.CTkImage]:
-        asset_dir = Path(__file__).resolve().parents[1] / "assets" / "sprites"
-        warrior_dir = Path(__file__).resolve().parents[1] / "assets" / "warrior"
+        asset_root = Path(__file__).resolve().parents[1] / "assets"
+        asset_dir = asset_root / "sprites"
         sprites: dict[str, ctk.CTkImage] = {}
         self.scene_sprites: dict[str, ImageTk.PhotoImage] = {}
         self.scene_hero_frames: dict[str, ImageTk.PhotoImage] = {}
@@ -130,18 +138,27 @@ class MainWindow(ctk.CTk):
             scene_image = image.resize(scene_size, Image.Resampling.NEAREST)
             self.scene_sprites[name] = ImageTk.PhotoImage(scene_image)
 
-        for frame_name in (
-            "idle",
-            "walk1",
-            "walk2",
-            "attack1",
-            "attack2",
-            "hit",
-            "victory",
-            "dead",
-        ):
-            path = warrior_dir / f"{frame_name}.png"
-            if not path.exists():
+        profile_path = resolve_visual_asset(
+            asset_root,
+            self.hero.class_id,
+            "front",
+        )
+        if profile_path is not None:
+            with Image.open(profile_path) as source:
+                profile_image = source.convert("RGBA").copy()
+            sprites["hero"] = ctk.CTkImage(
+                light_image=profile_image,
+                dark_image=profile_image,
+                size=(82, 82),
+            )
+
+        for frame_name in RENDER_FRAME_NAMES:
+            path = resolve_visual_asset(
+                asset_root,
+                self.hero.class_id,
+                frame_name,
+            )
+            if path is None:
                 continue
             with Image.open(path) as source:
                 frame = source.convert("RGBA").copy()
@@ -1134,13 +1151,7 @@ class MainWindow(ctk.CTk):
         self._draw_ambient_events()
 
         hero_frame = self.journey.hero_frame
-        if self.journey.phase == "reward":
-            hero_frame = (
-                "dead"
-                if self.journey.reward_text.startswith("DERROTA")
-                else "victory"
-            )
-        elif self.journey.hero_hit_flash:
+        if self.journey.hero_hit_flash:
             hero_frame = "hit"
         hero_image = self.scene_hero_frames.get(
             hero_frame,

@@ -541,3 +541,4 @@ O Sistema de Save será considerado bem-sucedido quando:
 * 2026-06-10: definido JSON local como formato inicial recomendado.
 * 2026-06-10: adicionadas regras de versionamento, migração e backup.
 * 2026-06-10: definida filosofia de recuperação e compatibilidade.
+* 2026-06-11: schema elevado para v4 com migração automática de `class_id = "warrior"`.

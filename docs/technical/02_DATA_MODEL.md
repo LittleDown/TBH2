@@ -1097,7 +1097,7 @@ O Modelo de Dados será considerado bem-sucedido quando:
 # Pendências
 
 * Definir defaults finais de raça.
-* Definir defaults finais de classe.
+* Expandir as definições de classe além dos identificadores iniciais.
 * Definir valores iniciais dos atributos.
 * Decidir se DungeonRun será persistido.
 * Definir propriedade dos equipamentos de companheiros.
@@ -1114,3 +1114,4 @@ O Modelo de Dados será considerado bem-sucedido quando:
 * 2026-06-10: separação entre dados persistentes e dados de definição estabelecida.
 * 2026-06-10: estratégia de combate marcada como campo legado.
 * 2026-06-10: contratos iniciais de Hero, Item, Monster, Map, SaveData e estados futuros definidos.
+* 2026-06-11: `class_id` implementado com `warrior` padrão, suporte técnico a `archer` e fallback seguro.

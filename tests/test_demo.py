@@ -260,10 +260,12 @@ class SaveTests(unittest.TestCase):
             saved_data = json.loads(save_path.read_text(encoding="utf-8"))
 
         self.assertEqual(loaded_again.save_version, SAVE_VERSION)
+        self.assertEqual(loaded_again.hero.class_id, "warrior")
         self.assertEqual(loaded_again.hero.level, 2)
         self.assertEqual(loaded_again.hero.gold, 42)
         self.assertEqual(loaded_again.campaign.victories, 3)
         self.assertEqual(saved_data["save_version"], SAVE_VERSION)
+        self.assertEqual(saved_data["hero"]["class_id"], "warrior")
         self.assertNotIn("strategy", saved_data["hero"])
         self.assertIn("world_progress", saved_data)
 

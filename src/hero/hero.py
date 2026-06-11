@@ -4,12 +4,14 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from balance import hero_level_growth, xp_required_for_level
+from hero.classes import DEFAULT_CLASS_ID, normalize_class_id
 from items.items import Item
 
 
 @dataclass
 class Hero:
     name: str = "Aventureiro"
+    class_id: str = DEFAULT_CLASS_ID
     level: int = 1
     xp: int = 0
     max_hp: int = 100
@@ -28,6 +30,9 @@ class Hero:
     enemies_defeated: int = 0
     deaths: int = 0
     bosses_defeated: int = 0
+
+    def __post_init__(self) -> None:
+        self.class_id = normalize_class_id(self.class_id)
 
     @property
     def attack(self) -> int:
@@ -122,6 +127,7 @@ class Hero:
     def to_core_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
+            "class_id": self.class_id,
             "level": self.level,
             "xp": self.xp,
             "max_hp": self.max_hp,
@@ -197,6 +203,7 @@ class Hero:
         current_hp = min(max_hp, max(1, int(data.get("current_hp", max_hp))))
         return cls(
             name=str(data.get("name", "Aventureiro")),
+            class_id=normalize_class_id(data.get("class_id")),
             level=max(1, int(data.get("level", 1))),
             xp=max(0, int(data.get("xp", 0))),
             max_hp=max_hp,
