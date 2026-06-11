@@ -18,8 +18,8 @@ class FloatingText:
 
 class JourneySceneController:
     EXPLORE_SPEED = 60.0
-    ENCOUNTER_SCROLL_SPEED = 24.0
     ENEMY_APPROACH_SPEED = 105.0
+    SPEED_TRANSITION_SECONDS = 0.75
     WALK_FRAME_SECONDS = 0.16
     ATTACK_DURATION = 0.42
     ATTACK_HIT_TIME = 0.16
@@ -32,7 +32,7 @@ class JourneySceneController:
     def __init__(
         self,
         scene_width: float = 342.0,
-        hero_home_x: float = 76.0,
+        hero_home_x: float = 102.0,
         enemy_home_x: float = 270.0,
         rng: Random | None = None,
     ) -> None:
@@ -44,6 +44,7 @@ class JourneySceneController:
         self.phase = "explore"
         self.phase_time = 0.0
         self.background_scroll = 0.0
+        self.world_speed_factor = 1.0
         self.encounter_distance = 0.0
         self.enemy_x = scene_width + 50.0
         self.hero_frame = "walk1"
@@ -56,7 +57,7 @@ class JourneySceneController:
         self.hit_target: str | None = None
         self.hit_time = 0.0
         self.floaters: list[FloatingText] = []
-        self.start_explore()
+        self.start_explore(resuming=False)
 
     @property
     def hero_x(self) -> float:
@@ -110,9 +111,14 @@ class JourneySceneController:
             and int((self.HIT_DURATION - self.hit_time) / 0.055) % 2 == 0
         )
 
-    def start_explore(self) -> None:
+    @property
+    def world_speed_percent(self) -> int:
+        return round(self.world_speed_factor * 100)
+
+    def start_explore(self, resuming: bool = False) -> None:
         self.phase = "explore"
         self.phase_time = 0.0
+        self.world_speed_factor = 0.0 if resuming else 1.0
         self.encounter_distance = self.rng.uniform(150.0, 230.0)
         self.enemy_x = self.scene_width + 50.0
         self.enemy_visible = False
@@ -165,8 +171,14 @@ class JourneySceneController:
         self._update_transients(dt)
 
         if self.phase == "explore":
-            self.background_scroll += self.EXPLORE_SPEED * dt
-            self.encounter_distance -= self.EXPLORE_SPEED * dt
+            if self.world_speed_factor < 1.0:
+                self.world_speed_factor = min(
+                    1.0,
+                    self.phase_time / self.SPEED_TRANSITION_SECONDS,
+                )
+            distance = self.EXPLORE_SPEED * self.world_speed_factor * dt
+            self.background_scroll += distance
+            self.encounter_distance -= distance
             frame_index = int(self.phase_time / self.WALK_FRAME_SECONDS) % 2
             self.hero_frame = "walk1" if frame_index == 0 else "walk2"
             if self.encounter_distance <= 0:
@@ -174,20 +186,29 @@ class JourneySceneController:
                 self.phase_time = 0.0
                 self.enemy_x = self.scene_width + 45.0
                 self.enemy_visible = True
-                self.hero_frame = "walk2"
+                self.hero_frame = "idle"
                 events.append("encounter")
 
         elif self.phase == "encounter":
-            self.background_scroll += self.ENCOUNTER_SCROLL_SPEED * dt
+            self.world_speed_factor = max(
+                0.0,
+                1.0 - self.phase_time / self.SPEED_TRANSITION_SECONDS,
+            )
+            self.background_scroll += (
+                self.EXPLORE_SPEED * self.world_speed_factor * dt
+            )
             self.enemy_x = max(
                 self.enemy_home_x,
                 self.enemy_x - self.ENEMY_APPROACH_SPEED * dt,
             )
-            frame_index = int(self.phase_time / 0.22) % 2
-            self.hero_frame = "walk1" if frame_index == 0 else "walk2"
-            if self.enemy_x <= self.enemy_home_x:
+            self.hero_frame = "idle"
+            if (
+                self.enemy_x <= self.enemy_home_x
+                and self.world_speed_factor <= 0
+            ):
                 self.phase = "fight"
                 self.phase_time = 0.0
+                self.world_speed_factor = 0.0
                 self.hero_frame = "idle"
                 events.append("fight")
 
@@ -207,7 +228,7 @@ class JourneySceneController:
                 if self.enemy_death_progress >= 1.0:
                     self.enemy_visible = False
             if self.phase_time >= self.REWARD_DURATION:
-                self.start_explore()
+                self.start_explore(resuming=True)
                 events.append("explore")
 
         return events

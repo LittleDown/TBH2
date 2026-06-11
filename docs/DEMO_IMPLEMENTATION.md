@@ -36,6 +36,9 @@ herói, inimigos, combate, itens, save e uma interface CustomTkinter.
   queda do inimigo e pose de vitória;
 - entrada do inimigo pela direita e retorno automático à exploração;
 - camada móvel sobre os ambientes para simular caminhada contínua;
+- parallax de 20%, 50% e 100% na Estrada Abandonada;
+- elementos procedurais leves reciclados ao sair da tela;
+- desaceleração gradual no encontro e aceleração após a recompensa;
 - ambientes distintos para os dez mapas do Ato I;
 - testes automatizados para combate, campanha, estratégias e persistência.
 

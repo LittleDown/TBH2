@@ -22,6 +22,8 @@ A base Python agora inclui uma demo compacta de 360x600 com:
 - fluxo Exploração → Encontro → Combate → Recompensa;
 - animações de caminhada, ataque, impacto, dano flutuante, vitória e morte;
 - entrada do inimigo pela direita e cenário com movimento contínuo;
+- parallax em três camadas na Estrada Abandonada;
+- desaceleração antes do combate e retomada gradual da jornada;
 - ambientes simples específicos para cada mapa do Ato I;
 - inventário visual 5x4, autoequipamento e equipamento manual por clique;
 - painel de equipamentos com Arma, Armadura e Acessório;
@@ -47,6 +49,7 @@ Documentos de entrada:
 - [Raças planejadas](docs/heroes/05_RACES.md)
 - [Dungeons planejadas](docs/maps/06_DUNGEONS.md)
 - [Relatório da demo](docs/DEMO_IMPLEMENTATION.md)
+- [Sprint Exploração Viva](docs/EXPLORACAO_VIVA_SPRINT.md)
 
 ## Requisitos
 

@@ -30,6 +30,25 @@ class JourneySceneTests(unittest.TestCase):
                 break
         self.assertEqual(scene.phase, "fight")
         self.assertEqual(scene.enemy_x, scene.enemy_home_x)
+        self.assertEqual(scene.world_speed_factor, 0)
+
+    def test_encounter_decelerates_world_and_stops_hero_walk(self) -> None:
+        scene = JourneySceneController(rng=Random(1))
+        scene.encounter_distance = 1
+        scene.update(0.05)
+
+        self.assertEqual(scene.phase, "encounter")
+        self.assertEqual(scene.hero_frame, "idle")
+        self.assertEqual(scene.world_speed_percent, 100)
+
+        scroll_steps = []
+        for _ in range(15):
+            before = scene.background_scroll
+            scene.update(0.05)
+            scroll_steps.append(scene.background_scroll - before)
+
+        self.assertGreater(scroll_steps[0], scroll_steps[-1])
+        self.assertEqual(scene.world_speed_percent, 0)
 
     def test_attack_has_lunge_hit_and_floating_damage(self) -> None:
         scene = JourneySceneController(rng=Random(1))
@@ -59,9 +78,17 @@ class JourneySceneTests(unittest.TestCase):
 
         events: list[str] = []
         for _ in range(40):
-            events.extend(scene.update(0.05))
+            update_events = scene.update(0.05)
+            events.extend(update_events)
+            if "explore" in update_events:
+                break
         self.assertIn("explore", events)
         self.assertEqual(scene.phase, "explore")
+        self.assertEqual(scene.world_speed_percent, 0)
+
+        scene.update(0.05)
+        self.assertGreater(scene.world_speed_percent, 0)
+        self.assertLess(scene.world_speed_percent, 100)
 
 
 if __name__ == "__main__":

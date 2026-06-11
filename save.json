@@ -2,13 +2,13 @@
   "version": 2,
   "hero": {
     "name": "Aventureiro",
-    "level": 12,
-    "xp": 1064,
-    "max_hp": 320,
-    "current_hp": 259,
-    "base_attack": 43,
-    "base_defense": 27,
-    "gold": 2166,
+    "level": 13,
+    "xp": 888,
+    "max_hp": 340,
+    "current_hp": 323,
+    "base_attack": 46,
+    "base_defense": 29,
+    "gold": 2450,
     "strategy": "Balanceado",
     "equipment": {
       "weapon": {
@@ -211,19 +211,59 @@
         "attack_bonus": 0,
         "defense_bonus": 16,
         "equipped": true
+      },
+      {
+        "item_id": "2161a8a831ac",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 14,
+        "attack_bonus": 0,
+        "defense_bonus": 14,
+        "equipped": false
+      },
+      {
+        "item_id": "2e02f0c20673",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 14,
+        "attack_bonus": 0,
+        "defense_bonus": 14,
+        "equipped": false
+      },
+      {
+        "item_id": "40f96d3c8a36",
+        "name": "Espada Enferrujada",
+        "rarity": "Comum",
+        "slot": "weapon",
+        "power": 14,
+        "attack_bonus": 14,
+        "defense_bonus": 0,
+        "equipped": false
+      },
+      {
+        "item_id": "13797827488d",
+        "name": "Escudo de Madeira",
+        "rarity": "Comum",
+        "slot": "armor",
+        "power": 14,
+        "attack_bonus": 0,
+        "defense_bonus": 14,
+        "equipped": false
       }
     ],
     "statistics": {
-      "enemies_defeated": 76,
+      "enemies_defeated": 82,
       "deaths": 0,
       "bosses_defeated": 0
     }
   },
   "campaign": {
     "act": "Fronteira Esquecida",
-    "map_index": 7,
-    "map_name": "Trilha da Névoa",
-    "victories": 6,
+    "map_index": 8,
+    "map_name": "Portões da Fortaleza",
+    "victories": 2,
     "target": 10,
     "act_completed": false
   }

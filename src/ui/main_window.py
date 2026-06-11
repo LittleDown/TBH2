@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from pathlib import Path
+from random import Random
 from time import perf_counter
 import tkinter as tk
 
@@ -71,6 +72,7 @@ class MainWindow(ctk.CTk):
         self.journey = JourneySceneController()
         self.last_frame_time = perf_counter()
         self.scene_map_index = -1
+        self.road_parallax = self._create_road_parallax()
         self.display_enemy_name = ""
         self.display_enemy_level = 1
         self.display_enemy_is_boss = False
@@ -165,6 +167,63 @@ class MainWindow(ctk.CTk):
         self._build_last_action()
         self._build_navigation()
         self._build_panels()
+
+    @staticmethod
+    def _create_road_parallax() -> dict[str, list[dict[str, float | str]]]:
+        rng = Random(20260610)
+        far: list[dict[str, float | str]] = []
+        for x in range(0, 760, 105):
+            far.append(
+                {
+                    "kind": rng.choice(("mountain_01", "mountain_02")),
+                    "x": float(x + rng.randint(-18, 18)),
+                    "y": float(rng.randint(65, 74)),
+                    "scale": rng.uniform(0.8, 1.2),
+                }
+            )
+        far.append({"kind": "castle_01", "x": 515.0, "y": 66.0, "scale": 1.0})
+
+        middle: list[dict[str, float | str]] = []
+        x = 10
+        while x < 640:
+            middle.append(
+                {
+                    "kind": rng.choice(
+                        ("tree_01", "tree_02", "tree_03", "fence_01")
+                    ),
+                    "x": float(x),
+                    "y": float(rng.randint(91, 104)),
+                    "scale": rng.uniform(0.8, 1.15),
+                }
+            )
+            x += rng.randint(55, 88)
+
+        foreground: list[dict[str, float | str]] = []
+        x = 5
+        while x < 520:
+            foreground.append(
+                {
+                    "kind": rng.choice(
+                        (
+                            "rock_01",
+                            "rock_02",
+                            "grass_01",
+                            "grass_01",
+                            "sign_01",
+                        )
+                    ),
+                    "x": float(x),
+                    "y": float(rng.randint(111, 151)),
+                    "scale": rng.uniform(0.75, 1.2),
+                }
+            )
+            x += rng.randint(32, 54)
+
+        return {
+            "far": far,
+            "middle": middle,
+            "foreground": foreground,
+        }
 
     def _build_header(self) -> None:
         header = ctk.CTkFrame(
@@ -370,6 +429,10 @@ class MainWindow(ctk.CTk):
 
     def _draw_motion_layer(self) -> None:
         self.scene.delete("motion")
+        if self.game_state.campaign.map_index == 0:
+            self._draw_road_parallax()
+            return
+
         offset = int(self.journey.background_scroll) % 48
         _, ground, path, feature = self.MAP_THEMES[
             self.game_state.campaign.map_index
@@ -409,11 +472,188 @@ class MainWindow(ctk.CTk):
         self.scene.tag_raise("motion", "environment")
         self.scene.tag_lower("motion", "actor")
 
-    def _draw_fields(self) -> None:
-        for x in (20, 58, 294, 326):
-            self.scene.create_line(
-                x, 79, x - 8, 108, fill="#c0a45c", width=2, tags=("environment",)
+    def _draw_road_parallax(self) -> None:
+        layers = (
+            ("far", 0.20, 760.0, "parallax_far"),
+            ("middle", 0.50, 640.0, "parallax_middle"),
+            ("foreground", 1.00, 520.0, "parallax_foreground"),
+        )
+        for layer_name, speed, cycle, tag in layers:
+            for element in self.road_parallax[layer_name]:
+                base_x = float(element["x"])
+                x = (
+                    base_x - self.journey.background_scroll * speed + 90
+                ) % cycle - 90
+                self._draw_road_element(
+                    kind=str(element["kind"]),
+                    x=x,
+                    y=float(element["y"]),
+                    scale=float(element["scale"]),
+                    tag=tag,
+                )
+
+        self.scene.tag_raise("parallax_far", "environment")
+        self.scene.tag_raise("parallax_middle", "parallax_far")
+        self.scene.tag_raise("parallax_foreground", "parallax_middle")
+        self.scene.tag_lower("parallax_foreground", "actor")
+
+    def _draw_road_element(
+        self,
+        kind: str,
+        x: float,
+        y: float,
+        scale: float,
+        tag: str,
+    ) -> None:
+        tags = ("motion", tag)
+        if kind.startswith("mountain"):
+            width = (88 if kind == "mountain_01" else 112) * scale
+            height = (27 if kind == "mountain_01" else 34) * scale
+            color = "#647977" if kind == "mountain_01" else "#596f6d"
+            self.scene.create_polygon(
+                x - width / 2,
+                y,
+                x - width * 0.12,
+                y - height,
+                x + width * 0.12,
+                y - height * 0.45,
+                x + width / 2,
+                y,
+                fill=color,
+                outline="",
+                tags=tags,
             )
+            return
+
+        if kind == "castle_01":
+            self.scene.create_rectangle(
+                x - 18 * scale,
+                y - 18 * scale,
+                x + 18 * scale,
+                y,
+                fill="#566866",
+                outline="",
+                tags=tags,
+            )
+            for tower_x in (x - 19 * scale, x + 10 * scale):
+                self.scene.create_rectangle(
+                    tower_x,
+                    y - 27 * scale,
+                    tower_x + 9 * scale,
+                    y,
+                    fill="#50615f",
+                    outline="",
+                    tags=tags,
+                )
+            return
+
+        if kind.startswith("tree"):
+            height = {
+                "tree_01": 38,
+                "tree_02": 47,
+                "tree_03": 32,
+            }[kind] * scale
+            crown = {
+                "tree_01": "#365b38",
+                "tree_02": "#294b31",
+                "tree_03": "#486a3d",
+            }[kind]
+            self.scene.create_rectangle(
+                x - 3 * scale,
+                y - height * 0.55,
+                x + 3 * scale,
+                y,
+                fill="#5a402d",
+                outline="",
+                tags=tags,
+            )
+            self.scene.create_oval(
+                x - 16 * scale,
+                y - height,
+                x + 16 * scale,
+                y - height * 0.35,
+                fill=crown,
+                outline="",
+                tags=tags,
+            )
+            return
+
+        if kind == "fence_01":
+            self.scene.create_line(
+                x - 21 * scale,
+                y - 13 * scale,
+                x + 21 * scale,
+                y - 10 * scale,
+                fill="#71573b",
+                width=2,
+                tags=tags,
+            )
+            for post_x in (x - 18 * scale, x, x + 18 * scale):
+                self.scene.create_line(
+                    post_x,
+                    y - 20 * scale,
+                    post_x,
+                    y,
+                    fill="#6b5138",
+                    width=2,
+                    tags=tags,
+                )
+            return
+
+        if kind.startswith("rock"):
+            width = (13 if kind == "rock_01" else 20) * scale
+            height = (7 if kind == "rock_01" else 10) * scale
+            self.scene.create_oval(
+                x - width / 2,
+                y - height,
+                x + width / 2,
+                y,
+                fill="#696961",
+                outline="#4e514d",
+                tags=tags,
+            )
+            return
+
+        if kind == "sign_01":
+            self.scene.create_line(
+                x,
+                y - 22 * scale,
+                x,
+                y,
+                fill="#684a31",
+                width=3,
+                tags=tags,
+            )
+            self.scene.create_polygon(
+                x - 2 * scale,
+                y - 23 * scale,
+                x + 17 * scale,
+                y - 21 * scale,
+                x + 11 * scale,
+                y - 14 * scale,
+                x - 2 * scale,
+                y - 16 * scale,
+                fill="#89623c",
+                outline="",
+                tags=tags,
+            )
+            return
+
+        self.scene.create_line(
+            x - 6 * scale,
+            y,
+            x - 2 * scale,
+            y - 10 * scale,
+            x,
+            y,
+            x + 5 * scale,
+            y - 12 * scale,
+            fill="#78914c",
+            width=2,
+            tags=tags,
+        )
+
+    def _draw_fields(self) -> None:
         self.scene.create_oval(
             235, 24, 282, 48, fill="#d7dfcf", outline="", tags=("environment",)
         )
@@ -979,13 +1219,27 @@ class MainWindow(ctk.CTk):
             self.scene.itemconfigure(item, state=enemy_state)
 
         if self.journey.phase == "explore":
+            status = (
+                f"RETOMANDO JORNADA  •  {self.journey.world_speed_percent}%"
+                if self.journey.world_speed_percent < 100
+                else (
+                    "EXPLORANDO  •  "
+                    f"{self.game_state.campaign.current_map.upper()}"
+                )
+            )
             self.scene.itemconfigure(
                 self.scene_status,
-                text=f"EXPLORANDO  •  {self.game_state.campaign.current_map.upper()}",
+                text=status,
             )
             self.scene.itemconfigure(self.scene_reward, state="hidden")
         elif self.journey.phase == "encounter":
-            self.scene.itemconfigure(self.scene_status, text="ENCONTRO!")
+            self.scene.itemconfigure(
+                self.scene_status,
+                text=(
+                    "ENCONTRO  •  "
+                    f"DESACELERANDO {self.journey.world_speed_percent}%"
+                ),
+            )
             self.scene.itemconfigure(self.scene_reward, state="hidden")
         elif self.journey.phase == "fight":
             self.scene.itemconfigure(self.scene_status, text="COMBATE AUTOMÁTICO")
